@@ -119,7 +119,7 @@
   /* ── physique des bulles : ressort + flottement + magnétique + inertie scroll + fluide ── */
   const bubbles = Array.from(navigation.querySelectorAll('.bubble'));
   const blobs = Array.from(navigation.querySelectorAll('.bubble-liquid i'));
-  const particles = Array.from({ length: 18 }, () => {
+  const particles = Array.from({ length: 34 }, () => {
     const particle = document.createElement('span');
     particle.className = 'bubble-particle';
     navigation.appendChild(particle);
@@ -191,7 +191,7 @@
         if (L) { p.vx += (L.x - p.x) * 0.018; p.vy += (L.y - p.y) * 0.018; }
         if (Rr) { p.vx += (Rr.x - p.x) * 0.018; p.vy += (Rr.y - p.y) * 0.018; }
         p.x += p.vx; p.y += p.vy;
-        if (open && p.s > 0.75 && Math.abs(p.vx) + Math.abs(p.vy) > 2.4 && Math.random() < 0.055) {
+        if (open && p.s > 0.75 && Math.abs(p.vx) + Math.abs(p.vy) > 2.4 && Math.random() < 0.11) {
           const q = particles.find(item => item.life <= 0);
           if (q) { q.x = p.el.offsetLeft + p.el.offsetWidth / 2 + p.x; q.y = p.el.offsetTop + p.el.offsetHeight / 2 + p.y; q.vx = -p.vx * 0.16 + (Math.random() - .5) * 1.2; q.vy = -p.vy * 0.16 + (Math.random() - .5) * 1.2; q.life = 1; }
         }
@@ -356,13 +356,22 @@
     const bytes = new Uint8Array(bin.length);
     for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
     const view = new DataView(bytes.buffer);
-    const count = Math.min(view.getUint32(80, true), 2600);
+    const declared = bytes.length >= 84 ? view.getUint32(80, true) : 0;
+    const binarySize = 84 + declared * 50;
     const tris = [];
-    for (let i = 0, off = 84; i < count && off + 50 <= bytes.length; i++, off += 50) {
-      const tri = [];
-      for (let v = 0; v < 3; v++) tri.push([view.getFloat32(off + 12 + v * 12, true), view.getFloat32(off + 16 + v * 12, true), view.getFloat32(off + 20 + v * 12, true)]);
-      tris.push(tri);
+    if (declared && binarySize <= bytes.length + 84) {
+      const step = Math.max(1, Math.ceil(declared / 9000));
+      for (let i = 0, off = 84; i < declared && off + 50 <= bytes.length; i++, off += 50) {
+        if (i % step) continue;
+        const tri = [];
+        for (let v = 0; v < 3; v++) tri.push([view.getFloat32(off + 12 + v * 12, true), view.getFloat32(off + 16 + v * 12, true), view.getFloat32(off + 20 + v * 12, true)]);
+        tris.push(tri);
+      }
+      return tris;
     }
+    const text = new TextDecoder().decode(bytes);
+    const nums = [...text.matchAll(/vertex\s+([\-\d.eE]+)\s+([\-\d.eE]+)\s+([\-\d.eE]+)/g)].map(m => [+m[1], +m[2], +m[3]]);
+    for (let i = 0; i + 2 < nums.length; i += 3) tris.push([nums[i], nums[i + 1], nums[i + 2]]);
     return tris;
   }
   function load(name) {
@@ -375,23 +384,31 @@
     ctx.clearRect(0, 0, w, h);
     ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--soft') || '#f4f4f4';
     ctx.fillRect(0, 0, w, h);
-    let pts = triangles.flat();
+    const pts = triangles.flat();
     let cx = 0, cy = 0, cz = 0;
     pts.forEach(p => { cx += p[0]; cy += p[1]; cz += p[2]; });
     cx /= pts.length; cy /= pts.length; cz /= pts.length;
     let max = 1;
     pts.forEach(p => { max = Math.max(max, Math.hypot(p[0] - cx, p[1] - cy, p[2] - cz)); });
-    const ca = Math.cos(angle), sa = Math.sin(angle), cb = Math.cos(-0.55), sb = Math.sin(-0.55), scale = Math.min(w, h) * .38 / max;
+    const ca = Math.cos(angle), sa = Math.sin(angle), cb = Math.cos(-0.6), sb = Math.sin(-0.6), scale = Math.min(w, h) * .42 / max;
     function project(p) {
-      let x = p[0] - cx, y = p[1] - cy, z = p[2] - cz;
+      const x = p[0] - cx, y = p[1] - cy, z = p[2] - cz;
       const x1 = x * ca - z * sa, z1 = x * sa + z * ca;
-      const y1 = y * cb - z1 * sb;
-      return [w / 2 + x1 * scale, h / 2 - y1 * scale];
+      const y1 = y * cb - z1 * sb, z2 = y * sb + z1 * cb;
+      return [w / 2 + x1 * scale, h / 2 - y1 * scale, z2];
     }
-    ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--fg') || '#000';
-    ctx.globalAlpha = .28; ctx.lineWidth = 1;
-    triangles.forEach(tri => { const a = project(tri[0]), b = project(tri[1]), c = project(tri[2]); ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.lineTo(c[0], c[1]); ctx.closePath(); ctx.stroke(); });
-    ctx.globalAlpha = 1; angle += .006; requestAnimationFrame(draw);
+    const fg = getComputedStyle(document.documentElement).getPropertyValue('--fg') || '#000';
+    const faces = triangles.map(tri => {
+      const a = project(tri[0]), b = project(tri[1]), c = project(tri[2]);
+      const shade = Math.max(.18, Math.min(.62, .38 + ((a[2] + b[2] + c[2]) / (3 * max)) * .22));
+      return { a, b, c, z: (a[2] + b[2] + c[2]) / 3, shade };
+    }).sort((u, v) => u.z - v.z);
+    faces.forEach(f => {
+      ctx.beginPath(); ctx.moveTo(f.a[0], f.a[1]); ctx.lineTo(f.b[0], f.b[1]); ctx.lineTo(f.c[0], f.c[1]); ctx.closePath();
+      ctx.globalAlpha = f.shade; ctx.fillStyle = fg; ctx.fill();
+      ctx.globalAlpha = .18; ctx.strokeStyle = fg; ctx.lineWidth = .7; ctx.stroke();
+    });
+    ctx.globalAlpha = 1; angle += .007; requestAnimationFrame(draw);
   }
   buttons.forEach(button => button.addEventListener('click', () => load(button.dataset.stl)));
   load(buttons[0]?.dataset.stl || Object.keys(data)[0]); draw();

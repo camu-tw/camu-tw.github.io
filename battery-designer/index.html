@@ -1,0 +1,2217 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Pack Configurator — V1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-0:#0d1013; --bg-1:#14181d; --bg-2:#1b2027; --line:#293039;
+    --text-0:#e7ebf0; --text-1:#a8b0bc; --text-2:#6b7480;
+    --copper:#c9835a; --copper-dim:#7a5439;
+    --steel:#5b8def; --ok:#34d399; --warn:#e0a52c; --danger:#e5484d;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --sans: 'Inter', system-ui, -apple-system, sans-serif;
+    color-scheme: dark;
+  }
+  :root:not([data-theme="light"]){ }
+  *{box-sizing:border-box;}
+  html,body{height:100%;margin:0;background:var(--bg-0);color:var(--text-0);font-family:var(--sans);}
+  body{padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px); overflow:hidden;}
+  #app{display:grid; grid-template-columns: 300px 1fr 320px; grid-template-rows: 52px 1fr 84px; height:100vh; height:100dvh;}
+  header{grid-column:1/4; grid-row:1; display:flex; align-items:center; gap:14px; padding:0 16px; border-bottom:1px solid var(--line); background:var(--bg-1);}
+  header .mark{width:10px;height:10px;border-radius:50%;background:var(--copper);}
+  header h1{font-size:14px; font-weight:600; letter-spacing:.02em; margin:0; white-space:nowrap;}
+  header .sub{font-size:12px; color:var(--text-2); font-family:var(--mono); white-space:nowrap;}
+  header .spacer{flex:1;}
+  header .badge{font-family:var(--mono); font-size:11px; padding:3px 8px; border:1px solid var(--line); border-radius:3px; color:var(--text-1);}
+
+  .mode-switch{display:flex; background:var(--bg-2); border:1px solid var(--line); border-radius:7px; padding:3px; gap:2px;}
+  .mode-switch button{border:none; background:transparent; color:var(--text-1); padding:5px 12px; font-size:12px; font-weight:500; border-radius:5px; cursor:pointer; white-space:nowrap;}
+  .mode-switch button.active{background:var(--copper); color:#1a1006; font-weight:600;}
+
+  aside{background:var(--bg-1); overflow-y:auto; padding:14px; border-right:1px solid var(--line);}
+  aside.right{border-right:none; border-left:1px solid var(--line);}
+  main{grid-column:2; grid-row:2;}
+  aside.left{grid-column:1; grid-row:2;}
+  aside.right{grid-column:3; grid-row:2;}
+  footer{grid-column:1/4; grid-row:3;}
+  #req-bottom{grid-column:1/4; grid-row:3; display:none;}
+  section.block{margin-bottom:18px;}
+  section.block h2{font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--text-2); margin:0 0 8px 0; font-weight:600;}
+  .row{display:flex; gap:8px; margin-bottom:8px; align-items:center;}
+  .row label{flex:1; font-size:12.5px; color:var(--text-1);}
+  .row input, .row select{width:120px; background:var(--bg-2); border:1px solid var(--line); color:var(--text-0); padding:5px 7px; border-radius:4px; font-family:var(--mono); font-size:12.5px;}
+  .row input[type=checkbox]{width:auto;}
+  .fullrow{display:flex; flex-direction:column; gap:6px; margin-bottom:8px;}
+  .fullrow select{width:100%; background:var(--bg-2); border:1px solid var(--line); color:var(--text-0); padding:6px 7px; border-radius:4px; font-size:12.5px;}
+  button{cursor:pointer; border-radius:5px; border:1px solid var(--line); background:var(--bg-2); color:var(--text-0); font-family:var(--sans); font-size:12.5px; padding:8px 10px;}
+  button:hover{border-color:var(--copper-dim);}
+  button.primary{background:var(--copper); border-color:var(--copper); color:#1a1006; font-weight:600;}
+  button.primary:hover{filter:brightness(1.08);}
+  button:disabled{opacity:.4; cursor:not-allowed;}
+  button.wide{width:100%; margin-bottom:8px;}
+  .hint{font-size:11px; color:var(--text-2); line-height:1.5; margin:4px 0 0 0;}
+  .hint.warn{color:var(--warn);}
+  .toggle-row{display:flex; align-items:center; gap:8px; margin-bottom:8px; font-size:12.5px; color:var(--text-1);}
+
+  main{position:relative; background:radial-gradient(circle at 50% 30%, #171c22 0%, #0d1013 75%);}
+  #canvas-wrap{position:absolute; inset:0;}
+  #status-line{position:absolute; left:12px; top:12px; font-family:var(--mono); font-size:11px; color:var(--text-1); background:rgba(20,24,29,.75); padding:6px 10px; border-radius:4px; border:1px solid var(--line); max-width:420px;}
+  #progress{position:absolute; left:12px; bottom:12px; right:12px; height:4px; background:var(--bg-2); border-radius:2px; overflow:hidden; display:none;}
+  #progress .bar{height:100%; width:0%; background:var(--copper);}
+
+  .stat{display:flex; justify-content:space-between; align-items:baseline; padding:4px 0; border-bottom:1px dashed var(--line); font-size:12.5px;}
+  .stat .k{color:var(--text-1);}
+  .stat .v{font-family:var(--mono); color:var(--text-0);}
+  .stat .v.ok{color:var(--ok);}
+  .stat .v.warn{color:var(--warn);}
+  .stat .v.danger{color:var(--danger);}
+
+  footer{grid-column:1/4; border-top:1px solid var(--line); background:var(--bg-1); padding:10px 16px; overflow-y:auto; font-family:var(--mono); font-size:11.5px; color:var(--text-1); line-height:1.6;}
+  footer .log-line.err{color:var(--danger);}
+  footer .log-line.ok{color:var(--ok);}
+  footer .log-line.warn{color:var(--warn);}
+
+  ::-webkit-scrollbar{width:8px;height:8px;}
+  ::-webkit-scrollbar-thumb{background:var(--line); border-radius:4px;}
+
+  .legend{display:flex; flex-wrap:wrap; gap:6px; margin-top:6px;}
+  .legend .sw{width:10px;height:10px;border-radius:2px;display:inline-block;margin-right:4px;vertical-align:-1px;}
+
+  /* ============ Mode 2 — Design from Requirements ============ */
+  .req-legend{display:flex; flex-direction:column; gap:4px;}
+  .req-legend .lchip{display:flex; align-items:center; gap:8px; padding:4px 8px; border:1px solid var(--line); border-radius:5px; cursor:pointer; font-size:12px; color:var(--text-1); background:var(--bg-2); transition:border-color .15s;}
+  .req-legend .lchip:hover{border-color:var(--copper-dim);}
+  .req-legend .lchip.active{border-color:var(--copper); color:var(--text-0);}
+  .req-legend .sw{width:11px;height:11px;border-radius:3px;flex:none;}
+
+  .solutions{display:flex; flex-direction:column; gap:6px;}
+  .sol-card{border:1px solid var(--line); border-radius:6px; padding:8px 9px; cursor:pointer; background:var(--bg-2); transition:border-color .15s;}
+  .sol-card:hover{border-color:var(--copper-dim);}
+  .sol-card.active{border-color:var(--copper); background:linear-gradient(0deg, rgba(201,131,90,.10), rgba(201,131,90,.10)), var(--bg-2);}
+  .sol-card .t{font-size:12px; font-weight:600; color:var(--text-0); display:flex; justify-content:space-between;}
+  .sol-card .t .sp{font-family:var(--mono); color:var(--copper); font-weight:700;}
+  .sol-card .m{font-size:10.5px; color:var(--text-2); font-family:var(--mono); margin-top:2px; line-height:1.5;}
+
+  .warnbox{margin-bottom:8px; padding:8px 10px; border:1px solid var(--line); border-radius:6px; background:var(--bg-2);}
+  .warnbox .item{font-size:11.5px; line-height:1.5; margin-bottom:4px; padding-left:12px; position:relative;}
+  .warnbox .item:before{content:''; position:absolute; left:0; top:5px; width:6px; height:6px; border-radius:50%;}
+  .warnbox .item.warn{color:var(--warn);} .warnbox .item.warn:before{background:var(--warn);}
+  .warnbox .item.err{color:var(--danger);} .warnbox .item.err:before{background:var(--danger);}
+  .warnbox .item.ok{color:var(--ok);} .warnbox .item.ok:before{background:var(--ok);}
+
+  #req-bottom{display:flex; align-items:center; gap:8px; padding:10px 16px; border-top:1px solid var(--line); background:var(--bg-1); overflow-x:auto; white-space:nowrap;}
+  #req-bottom .sep{width:1px; height:24px; background:var(--line); margin:0 4px;}
+  #req-bottom .grp{display:flex; align-items:center; gap:6px;}
+  #req-bottom button{font-size:12px; padding:6px 10px;}
+  #req-bottom button.active{background:var(--copper); border-color:var(--copper); color:#1a1006; font-weight:600;}
+  #req-bottom .lbl{font-size:10.5px; color:var(--text-2); text-transform:uppercase; letter-spacing:.05em; margin-right:2px;}
+
+  #breakdown-panel{position:absolute; right:12px; bottom:12px; width:300px; background:rgba(20,24,29,.92); border:1px solid var(--line); border-radius:8px; padding:12px 14px; font-family:var(--mono); font-size:11px; color:var(--text-1);}
+  #breakdown-panel .bd-title{font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--text-2); margin-bottom:10px; font-weight:600;}
+  #breakdown-panel .bd-row{display:grid; grid-template-columns: 110px 1fr 84px; gap:8px; align-items:center; margin-bottom:6px;}
+  #breakdown-panel .bd-row .nm{color:var(--text-1); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  #breakdown-panel .bd-row .barwrap{height:8px; background:var(--bg-2); border-radius:3px; overflow:hidden;}
+  #breakdown-panel .bd-row .barfill{height:100%; border-radius:3px;}
+  #breakdown-panel .bd-row .vl{text-align:right; color:var(--text-0);}
+  #breakdown-panel .bd-total{border-top:1px solid var(--line); padding-top:8px; margin-top:4px; display:flex; justify-content:space-between; color:var(--text-0); font-weight:600;}
+
+  #sel-panel{position:absolute; right:12px; top:12px; width:210px; background:rgba(20,24,29,.92); border:1px solid var(--line); border-radius:8px; padding:12px 14px; font-family:var(--mono); font-size:11px; color:var(--text-1);}
+  #sel-panel .sn{font-size:13px; font-weight:600; color:var(--text-0); margin-bottom:6px;}
+  #sel-panel .sl{display:flex; justify-content:space-between; padding:2px 0; border-bottom:1px dashed var(--line);}
+  #sel-panel .sl .k{color:var(--text-2);}
+  #sel-panel .sl .v{color:var(--text-0);}
+
+  /* ============ AI Requirement Assistant ============ */
+  .ai-tabs{display:flex; background:var(--bg-2); border:1px solid var(--line); border-radius:6px; padding:2px; margin-bottom:8px;}
+  .ai-tabs .ai-tab{flex:1; border:none; background:transparent; color:var(--text-1); font-size:11px; padding:5px 2px; border-radius:4px; cursor:pointer; white-space:nowrap;}
+  .ai-tabs .ai-tab.active{background:var(--copper); color:#1a1006; font-weight:600;}
+  .ai-pane textarea{width:100%; background:var(--bg-2); border:1px solid var(--line); color:var(--text-0); padding:7px; border-radius:5px; font-family:var(--mono); font-size:12px; resize:vertical; min-height:64px; margin-bottom:8px; box-sizing:border-box;}
+  .ai-pane input[type=text]{width:100%; background:var(--bg-2); border:1px solid var(--line); color:var(--text-0); padding:7px; border-radius:5px; font-family:var(--mono); font-size:12px; margin-bottom:8px; box-sizing:border-box;}
+
+  #ai-results-modal{position:fixed; inset:0; background:rgba(6,8,10,.72); display:flex; align-items:center; justify-content:center; z-index:100;}
+  .ai-modal{width:min(700px, 94vw); max-height:90vh; display:flex; flex-direction:column; background:var(--bg-1); border:1px solid var(--line); border-radius:10px; overflow:hidden; box-shadow:0 24px 70px rgba(0,0,0,.55);}
+  .ai-modal-head{display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border-bottom:1px solid var(--line);}
+  .ai-modal-title{font-size:13px; font-weight:600;}
+  .ai-modal-close{border:none; background:transparent; color:var(--text-1); font-size:18px; cursor:pointer; padding:2px 8px; line-height:1;}
+  .ai-modal-close:hover{color:var(--text-0);}
+  .ai-modal-body{overflow-y:auto; padding:14px 16px;}
+  .ai-table-head{display:grid; grid-template-columns:1.2fr 90px 34px 1.7fr 24px; gap:8px; font-size:10px; text-transform:uppercase; letter-spacing:.05em; color:var(--text-2); margin-bottom:6px;}
+  .ai-row{display:grid; grid-template-columns:1.2fr 90px 34px 1.7fr 24px; gap:8px; align-items:center; padding:4px 0; border-bottom:1px dashed var(--line); font-family:var(--mono); font-size:11.5px;}
+  .ai-row-label{color:var(--text-1);}
+  .ai-row input{width:100%; background:var(--bg-2); border:1px solid var(--line); color:var(--text-0); padding:3px 6px; border-radius:4px; font-family:var(--mono); font-size:11.5px;}
+  .ai-row-unit{color:var(--text-2);}
+  .ai-row-srcwrap{display:flex; align-items:center; gap:6px; min-width:0;}
+  .ai-row-src{color:var(--text-2); font-size:10.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .ai-row-src a{color:var(--steel); text-decoration:none;}
+  .ai-row-src a:hover{text-decoration:underline;}
+  .ai-row-del{border:none; background:transparent; color:var(--text-2); cursor:pointer; font-size:14px; padding:0;}
+  .ai-row-del:hover{color:var(--danger);}
+  .conf{font-size:9.5px; font-weight:600; padding:1px 6px; border-radius:3px; text-transform:uppercase; letter-spacing:.03em; flex:none;}
+  .conf.high{background:rgba(52,211,153,.16); color:var(--ok);}
+  .conf.medium{background:rgba(224,165,44,.16); color:var(--warn);}
+  .conf.low{background:rgba(107,116,128,.22); color:var(--text-1);}
+  .ai-modal-body h4{font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--text-2); margin:14px 0 6px; font-weight:600;}
+  .ai-goal-row{display:flex; align-items:center; gap:10px; margin-top:14px; font-size:12px; color:var(--text-1);}
+  .ai-goal-row select{background:var(--bg-2); border:1px solid var(--line); color:var(--text-0); padding:5px 7px; border-radius:4px; font-size:12px;}
+  .ai-modal-foot{display:flex; gap:8px; justify-content:flex-end; padding:12px 16px; border-top:1px solid var(--line);}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="mark"></div>
+    <h1>Pack Configurator</h1>
+    <span class="sub" id="header-sub">V1 — placement 3D réel</span>
+    <div class="mode-switch" id="mode-switch">
+      <button class="active" data-mode="designer" id="mode-designer">Battery Designer</button>
+      <button data-mode="req" id="mode-req">Design from Requirements</button>
+    </div>
+    <div class="spacer"></div>
+    <span class="badge" id="tri-count">0 triangles</span>
+    <span class="badge" id="cell-count">0 cellules</span>
+  </header>
+
+  <aside class="left" id="aside-designer-left">
+    <section class="block">
+      <h2>Volume disponible</h2>
+      <input type="file" id="stl-input" accept=".stl" style="display:none">
+      <button class="wide" id="btn-import">Import 3D model (.stl)</button>
+      <button class="wide" id="btn-sample">Charger une forme d'exemple (forme en L)</button>
+      <p class="hint" id="step-hint">STEP/STP nécessite un backend OpenCascade (voir le projet fourni) — non exécutable en direct dans cette page. Utilisez un .stl en attendant.</p>
+    </section>
+
+    <section class="block">
+      <h2>Cellule</h2>
+      <div class="fullrow">
+        <select id="cell-preset">
+          <option value="21700">21700 — 21×70mm, 4.0Ah</option>
+          <option value="18650">18650 — 18×65mm, 3.0Ah</option>
+          <option value="4680">4680 — 46×80mm, 20.0Ah</option>
+          <option value="custom">Custom…</option>
+        </select>
+      </div>
+      <div class="row"><label>Diamètre (mm)</label><input type="number" id="c-d" value="21" step="0.1"></div>
+      <div class="row"><label>Longueur (mm)</label><input type="number" id="c-l" value="70" step="0.1"></div>
+      <div class="row"><label>Capacité (Ah)</label><input type="number" id="c-cap" value="4.0" step="0.1"></div>
+      <div class="row"><label>V nominal</label><input type="number" id="c-vnom" value="3.6" step="0.01"></div>
+      <div class="row"><label>V max</label><input type="number" id="c-vmax" value="4.2" step="0.01"></div>
+      <div class="row"><label>I continu (A)</label><input type="number" id="c-imax" value="20" step="0.5"></div>
+      <div class="row"><label>Masse (g)</label><input type="number" id="c-mass" value="70" step="1"></div>
+      <div class="row"><label>Espacement min (mm)</label><input type="number" id="c-clear" value="1.5" step="0.1"></div>
+    </section>
+
+    <section class="block">
+      <h2>Configuration électrique</h2>
+      <div class="row"><label>Series S</label><input type="number" id="c-s" value="6" min="1" step="1"></div>
+      <div class="toggle-row"><input type="checkbox" id="c-maxmode"><label for="c-maxmode">Mode « Maximum Cells » (P non fixé, recherché automatiquement)</label></div>
+      <div class="row" id="p-row"><label>Parallel P</label><input type="number" id="c-p" value="4" min="1" step="1"></div>
+    </section>
+
+    <section class="block">
+      <h2>Qualité du calcul</h2>
+      <div class="fullrow">
+        <select id="c-quality">
+          <option value="fast">Rapide (échantillonnage réduit)</option>
+          <option value="precise" selected>Précis (18 points/cellule)</option>
+        </select>
+      </div>
+      <p class="hint">Chaque cellule est testée contre le maillage réel (ray casting), pas contre une bounding box.</p>
+    </section>
+
+    <button class="wide primary" id="btn-generate" disabled>GENERATE PACK</button>
+  </aside>
+
+  <main>
+    <div id="canvas-wrap"></div>
+    <div id="status-line">Importez un .stl ou chargez la forme d'exemple pour commencer.</div>
+    <div id="progress"><div class="bar"></div></div>
+    <div id="sel-panel" style="display:none">
+      <div class="sn" id="sel-name">—</div>
+      <div class="sl"><span class="k">Dimensions</span><span class="v" id="sel-dims">—</span></div>
+      <div class="sl"><span class="k">Masse</span><span class="v" id="sel-mass">—</span></div>
+      <div class="sl"><span class="k">Espace réservé</span><span class="v" id="sel-space">—</span></div>
+    </div>
+    <div id="breakdown-panel" style="display:none">
+      <div class="bd-title">Volume Breakdown</div>
+      <div id="bd-bars"></div>
+      <div class="bd-total"><span>Total (L×W×H)</span><span id="bd-total">—</span></div>
+    </div>
+  </main>
+
+  <aside class="right" id="aside-designer-right">
+    <section class="block">
+      <h2>Battery</h2>
+      <div class="stat"><span class="k">Configuration</span><span class="v" id="s-config">—</span></div>
+      <div class="stat"><span class="k">Cellules câblées</span><span class="v" id="s-cells">0</span></div>
+      <div class="stat"><span class="k">Cellules libres (non câblées)</span><span class="v" id="s-spare">0</span></div>
+      <div class="stat"><span class="k">V nominal</span><span class="v" id="s-vnom">—</span></div>
+      <div class="stat"><span class="k">V max</span><span class="v" id="s-vmax">—</span></div>
+      <div class="stat"><span class="k">Capacité</span><span class="v" id="s-cap">—</span></div>
+      <div class="stat"><span class="k">Énergie</span><span class="v" id="s-energy">—</span></div>
+      <div class="stat"><span class="k">I max</span><span class="v" id="s-imax">—</span></div>
+      <div class="stat"><span class="k">P max</span><span class="v" id="s-pmax">—</span></div>
+      <div class="stat"><span class="k">Masse cellules</span><span class="v" id="s-mass">—</span></div>
+    </section>
+    <section class="block">
+      <h2>Mechanical</h2>
+      <div class="stat"><span class="k">Dimensions (X/Y/Z)</span><span class="v" id="m-dims">—</span></div>
+      <div class="stat"><span class="k">Volume disponible</span><span class="v" id="m-volavail">—</span></div>
+      <div class="stat"><span class="k">Volume occupé (cellules)</span><span class="v" id="m-volused">—</span></div>
+      <div class="stat"><span class="k">Taux de remplissage</span><span class="v" id="m-fill">—</span></div>
+    </section>
+    <section class="block">
+      <h2>Groupes série</h2>
+      <div class="legend" id="legend"></div>
+    </section>
+  </aside>
+
+  <aside class="left" id="aside-req-left" style="display:none">
+    <section class="block" id="ai-section">
+      <h2>AI Requirement Assistant</h2>
+      <div class="ai-tabs">
+        <button class="ai-tab active" data-aitab="describe">Describe</button>
+        <button class="ai-tab" data-aitab="upload">Upload</button>
+        <button class="ai-tab" data-aitab="search">Search / Replace</button>
+      </div>
+      <div class="ai-pane" id="ai-pane-describe">
+        <textarea id="ai-text" rows="4" placeholder="Describe your battery requirements… ex : « 12S, 80 A pendant 10 min, 1 kWh »"></textarea>
+        <button class="wide primary" id="btn-ai-extract">Extract Requirements</button>
+      </div>
+      <div class="ai-pane" id="ai-pane-upload" style="display:none">
+        <input type="file" id="ai-file" accept=".txt,.md,.csv,.pdf,.png,.jpg,.jpeg,.webp" style="display:none">
+        <button class="wide" id="btn-ai-upload">Upload document (PDF / texte / image)</button>
+        <p class="hint">Fichiers texte : extraction directe. PDF : extraction de texte (pdf.js). Image : l'OCR nécessite un modèle de vision (backend) — collez le texte de l'étiquette dans « Describe ».</p>
+      </div>
+      <div class="ai-pane" id="ai-pane-search" style="display:none">
+        <input type="text" id="ai-search-input" placeholder="Nom / référence — ex : Tattu 12S 16000, DJI TB65">
+        <button class="wide" id="btn-ai-search">Search reference library</button>
+        <p class="hint" id="ai-lib-hint"></p>
+      </div>
+      <p class="hint" style="margin-top:6px">Extraction locale (règles, sans serveur). La recherche web en direct et l'OCR image nécessitent un backend / clé API — non inclus ici.</p>
+    </section>
+
+    <section class="block">
+      <h2>Electrical requirements</h2>
+      <div class="row"><label>V nominal (V)</label><input type="number" id="r-vnom" value="36" step="0.1"></div>
+      <div class="row"><label>V min (V)</label><input type="number" id="r-vmin" value="" step="0.1" placeholder="auto"></div>
+      <div class="row"><label>V max (V)</label><input type="number" id="r-vmax" value="" step="0.1" placeholder="auto"></div>
+      <div class="row"><label>P continu (W)</label><input type="number" id="r-pcont" value="500" step="1"></div>
+      <div class="row"><label>P peak (W)</label><input type="number" id="r-ppeak" value="" step="1" placeholder="auto"></div>
+      <div class="row"><label>I continu (A)</label><input type="number" id="r-icont" value="" step="0.5" placeholder="auto"></div>
+      <div class="row"><label>I peak (A)</label><input type="number" id="r-ipeak" value="" step="0.5" placeholder="auto"></div>
+      <div class="row"><label>Énergie (Wh)</label><input type="number" id="r-energ" value="400" step="1"></div>
+      <div class="row"><label>Capacité (Ah)</label><input type="number" id="r-cap" value="" step="0.1" placeholder="auto"></div>
+      <div class="row"><label>Marge de sécurité (%)</label><input type="number" id="r-margin" value="10" step="1"></div>
+      <p class="hint">Laissez vide les champs inconnus — le logiciel les calcule.</p>
+    </section>
+
+    <section class="block">
+      <h2>Cell</h2>
+      <div class="fullrow">
+        <select id="r-cell-type">
+          <option value="21700">21700 — cylindrique, 4.0 Ah</option>
+          <option value="18650">18650 — cylindrique, 3.0 Ah</option>
+          <option value="32140">32140 — cylindrique LFP, 15 Ah</option>
+          <option value="4680">4680 — cylindrique, 20 Ah</option>
+          <option value="pouch">Pouch — prismatique souple</option>
+          <option value="prismatic">Prismatic — prismatique rigide</option>
+          <option value="custom">Custom…</option>
+        </select>
+      </div>
+      <div class="fullrow" id="custom-form-row" style="display:none">
+        <select id="r-custom-form">
+          <option value="cyl">Forme : cylindrique</option>
+          <option value="pris">Forme : pouch / prismatique</option>
+        </select>
+      </div>
+      <div class="row cyl-field"><label>Diamètre (mm)</label><input type="number" id="r-d" value="21" step="0.1"></div>
+      <div class="row cyl-field"><label>Longueur (mm)</label><input type="number" id="r-l" value="70" step="0.1"></div>
+      <div class="row pris-field"><label>Largeur (mm)</label><input type="number" id="r-w" value="100" step="0.1"></div>
+      <div class="row pris-field"><label>Épaisseur (mm)</label><input type="number" id="r-t" value="12" step="0.1"></div>
+      <div class="row pris-field"><label>Hauteur (mm)</label><input type="number" id="r-h" value="180" step="0.1"></div>
+      <div class="row"><label>Capacité (Ah)</label><input type="number" id="r-cap-cell" value="4.0" step="0.1"></div>
+      <div class="row"><label>V nominal</label><input type="number" id="r-vnom-cell" value="3.6" step="0.01"></div>
+      <div class="row"><label>V min</label><input type="number" id="r-vmin-cell" value="3.0" step="0.01"></div>
+      <div class="row"><label>V max</label><input type="number" id="r-vmax-cell" value="4.2" step="0.01"></div>
+      <div class="row"><label>I continu (A)</label><input type="number" id="r-icont-cell" value="20" step="0.5"></div>
+      <div class="row"><label>I peak (A)</label><input type="number" id="r-ipeak-cell" value="40" step="0.5"></div>
+      <div class="row"><label>I charge (A)</label><input type="number" id="r-icharge-cell" value="6" step="0.5"></div>
+      <div class="row"><label>Masse (g)</label><input type="number" id="r-mass-cell" value="70" step="1"></div>
+      <div class="row"><label>Espacement min (mm)</label><input type="number" id="r-clear-cell" value="1.5" step="0.1"></div>
+    </section>
+
+    <section class="block">
+      <h2>Configuration S×P</h2>
+      <div class="toggle-row"><input type="checkbox" id="r-override"><label for="r-override">Fixer S×P manuellement</label></div>
+      <div class="row"><label>Series S</label><input type="number" id="r-s" value="10" min="1" step="1"></div>
+      <div class="row"><label>Parallel P</label><input type="number" id="r-p" value="1" min="1" step="1"></div>
+    </section>
+
+    <section class="block">
+      <h2>Options</h2>
+      <div class="toggle-row"><input type="checkbox" id="r-thermal"><label for="r-thermal">Gestion thermique (refroidissement)</label></div>
+    </section>
+  </aside>
+
+  <aside class="right" id="aside-req-right" style="display:none">
+    <section class="block" id="warnings-block">
+      <h2>Contraintes</h2>
+      <div class="warnbox" id="q-warnings"></div>
+    </section>
+    <section class="block">
+      <h2>Electrical</h2>
+      <div class="stat"><span class="k">Configuration</span><span class="v" id="q-config">—</span></div>
+      <div class="stat"><span class="k">Cellules totales</span><span class="v" id="q-cells">—</span></div>
+      <div class="stat"><span class="k">V nominal</span><span class="v" id="q-vnom">—</span></div>
+      <div class="stat"><span class="k">V min / V max</span><span class="v" id="q-vrange">—</span></div>
+      <div class="stat"><span class="k">Capacité</span><span class="v" id="q-cap">—</span></div>
+      <div class="stat"><span class="k">Énergie</span><span class="v" id="q-energy">—</span></div>
+      <div class="stat"><span class="k">I continu</span><span class="v" id="q-icont">—</span></div>
+      <div class="stat"><span class="k">I peak</span><span class="v" id="q-ipeak">—</span></div>
+      <div class="stat"><span class="k">Puissance continue</span><span class="v" id="q-pcont">—</span></div>
+      <div class="stat"><span class="k">Puissance peak</span><span class="v" id="q-ppeak">—</span></div>
+    </section>
+    <section class="block">
+      <h2>Physical</h2>
+      <div class="stat"><span class="k">Dimensions (L/W/H)</span><span class="v" id="q-dims">—</span></div>
+      <div class="stat"><span class="k">Volume pack</span><span class="v" id="q-vol">—</span></div>
+      <div class="stat"><span class="k">Masse totale</span><span class="v" id="q-mass">—</span></div>
+      <div class="stat"><span class="k">Couches</span><span class="v" id="q-layers">—</span></div>
+      <div class="stat"><span class="k">Arrangement</span><span class="v" id="q-arrangement">—</span></div>
+      <div class="stat"><span class="k">Densité énergétique</span><span class="v" id="q-dens">—</span></div>
+    </section>
+    <section class="block">
+      <h2>Components</h2>
+      <div class="stat"><span class="k">BMS</span><span class="v" id="q-bms">—</span></div>
+      <div class="stat"><span class="k">Connecteur principal</span><span class="v" id="q-conn-main">—</span></div>
+      <div class="stat"><span class="k">Connecteur charge</span><span class="v" id="q-conn-charge">—</span></div>
+      <div class="stat"><span class="k">Câblage</span><span class="v" id="q-wiring">—</span></div>
+      <div class="stat"><span class="k">Busbars</span><span class="v" id="q-busbars">—</span></div>
+      <div class="stat"><span class="k">Supports</span><span class="v" id="q-supports">—</span></div>
+      <div class="stat"><span class="k">Isolation</span><span class="v" id="q-isolation">—</span></div>
+      <div class="stat"><span class="k">Clearance</span><span class="v" id="q-clearance">—</span></div>
+    </section>
+    <section class="block">
+      <h2>Solutions</h2>
+      <div class="solutions" id="q-solutions"></div>
+    </section>
+    <section class="block">
+      <h2>Legend</h2>
+      <div class="req-legend" id="req-legend"></div>
+    </section>
+  </aside>
+
+  <footer id="log"></footer>
+
+  <div id="req-bottom">
+    <span class="lbl">Build</span>
+    <div class="grp">
+      <button id="btn-play-anim">Play Animation</button>
+      <button id="btn-skip-anim">Skip Animation</button>
+    </div>
+    <div class="sep"></div>
+    <span class="lbl">View</span>
+    <div class="grp">
+      <button id="btn-exploded" class="toggle-btn">Exploded View</button>
+      <button id="btn-breakdown" class="toggle-btn">Show Volume Breakdown</button>
+    </div>
+    <div class="sep"></div>
+    <span class="lbl">Camera</span>
+    <div class="grp">
+      <button data-view="iso">Isométrique</button>
+      <button data-view="top">Dessus</button>
+      <button data-view="front">Avant</button>
+      <button data-view="side">Côté</button>
+      <button data-view="reset">Reset</button>
+    </div>
+  </div>
+</div>
+
+<div id="ai-results-modal" style="display:none">
+  <div class="ai-modal">
+    <div class="ai-modal-head">
+      <span class="ai-modal-title">AI extracted requirements</span>
+      <button class="ai-modal-close" id="ai-close">×</button>
+    </div>
+    <div class="ai-modal-body">
+      <div class="ai-table-head"><span>Parameter</span><span>Value</span><span>Unit</span><span>Source / Confidence</span><span></span></div>
+      <div id="ai-fields-body"></div>
+      <div id="ai-missing-block">
+        <h4>Missing information</h4>
+        <div class="warnbox" id="ai-missing"></div>
+      </div>
+      <div id="ai-contra-block" style="display:none">
+        <h4>Potential inconsistency</h4>
+        <div class="warnbox" id="ai-contra"></div>
+      </div>
+      <div class="ai-goal-row">
+        <label>Optimisation cible</label>
+        <select id="ai-goal">
+          <option value="balanced">Mêmes performances</option>
+          <option value="minVol">Volume minimal</option>
+          <option value="minMass">Masse minimale</option>
+          <option value="maxPower">Puissance maximale</option>
+        </select>
+      </div>
+    </div>
+    <div class="ai-modal-foot">
+      <button class="primary" id="ai-apply">Apply Requirements</button>
+      <button id="ai-cancel">Close</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(function(){
+"use strict";
+
+/* ---------- logging ---------- */
+const logEl = document.getElementById('log');
+function log(msg, level){
+  const line = document.createElement('div');
+  line.className = 'log-line' + (level ? (' '+level) : '');
+  const t = new Date().toLocaleTimeString();
+  line.textContent = `[${t}] ${msg}`;
+  logEl.appendChild(line);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+function setStatus(msg){ document.getElementById('status-line').textContent = msg; }
+
+/* ---------- three.js scene ---------- */
+const wrap = document.getElementById('canvas-wrap');
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100000);
+camera.position.set(200,180,260);
+const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+wrap.appendChild(renderer.domElement);
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.dampingFactor = 0.08;
+
+scene.add(new THREE.HemisphereLight(0xaecbff, 0x0a0d10, 0.9));
+const dir1 = new THREE.DirectionalLight(0xffffff, 0.8); dir1.position.set(1,1.4,0.6); scene.add(dir1);
+const dir2 = new THREE.DirectionalLight(0x88aaff, 0.35); dir2.position.set(-1,-0.4,-0.8); scene.add(dir2);
+
+function resize(){
+  const w = wrap.clientWidth, h = wrap.clientHeight;
+  renderer.setSize(w,h);
+  camera.aspect = w/h; camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(wrap);
+resize();
+
+/* ---------- state ---------- */
+const S = {
+  hullMesh: null,
+  hullGeometry: null,
+  bbox: null,
+  cellsGroup: new THREE.Group(),
+};
+scene.add(S.cellsGroup);
+
+const RAY_DIR = new THREE.Vector3(0.6180339887, 0.7861513778, 0.4207354924).normalize();
+const raycaster = new THREE.Raycaster();
+raycaster.far = 1e7;
+
+function pointInMesh(point){
+  raycaster.set(point, RAY_DIR);
+  const hits = raycaster.intersectObject(S.hullMesh, false);
+  return (hits.length % 2) === 1;
+}
+
+function computeMeshVolumeMM3(geometry){
+  const pos = geometry.attributes.position;
+  let vol = 0;
+  const a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3();
+  const index = geometry.index;
+  if(index){
+    for(let i=0;i<index.count;i+=3){
+      a.fromBufferAttribute(pos, index.getX(i));
+      b.fromBufferAttribute(pos, index.getX(i+1));
+      c.fromBufferAttribute(pos, index.getX(i+2));
+      vol += a.dot(b.clone().cross(c)) / 6;
+    }
+  } else {
+    for(let i=0;i<pos.count;i+=3){
+      a.fromBufferAttribute(pos, i);
+      b.fromBufferAttribute(pos, i+1);
+      c.fromBufferAttribute(pos, i+2);
+      vol += a.dot(b.clone().cross(c)) / 6;
+    }
+  }
+  return Math.abs(vol);
+}
+
+function setHull(geometry, label){
+  if(S.hullMesh){ scene.remove(S.hullMesh); S.hullMesh.geometry.dispose(); S.hullMesh.material.dispose(); }
+  S.cellsGroup.clear();
+  geometry.computeBoundingBox();
+  geometry.computeVertexNormals();
+  const mat = new THREE.MeshStandardMaterial({
+    color: 0x5b8def, transparent:true, opacity:0.16,
+    side: THREE.DoubleSide, depthWrite:false, roughness:0.7, metalness:0.05
+  });
+  const mesh = new THREE.Mesh(geometry, mat);
+  scene.add(mesh);
+  S.hullMesh = mesh; S.hullGeometry = geometry; S.bbox = geometry.boundingBox.clone();
+
+  const size = new THREE.Vector3(); S.bbox.getSize(size);
+  const center = new THREE.Vector3(); S.bbox.getCenter(center);
+  const dist = Math.max(size.x,size.y,size.z) * 1.8 + 40;
+  camera.position.set(center.x+dist*0.6, center.y+dist*0.5, center.z+dist*0.7);
+  controls.target.copy(center);
+  controls.update();
+
+  document.getElementById('tri-count').textContent =
+    (geometry.index ? geometry.index.count/3 : geometry.attributes.position.count/3) + ' triangles';
+  document.getElementById('m-dims').textContent = `${size.x.toFixed(1)} / ${size.y.toFixed(1)} / ${size.z.toFixed(1)} mm`;
+  const volAvail = computeMeshVolumeMM3(geometry);
+  document.getElementById('m-volavail').textContent = (volAvail/1000).toFixed(1) + ' cm³';
+  S.volAvail = volAvail;
+
+  document.getElementById('btn-generate').disabled = false;
+  setStatus(`${label} chargé — ${size.x.toFixed(0)}×${size.y.toFixed(0)}×${size.z.toFixed(0)} mm. Prêt pour GENERATE PACK.`);
+  log(`Volume "${label}" chargé (${(geometry.index?geometry.index.count/3:geometry.attributes.position.count/3)} triangles, ${(volAvail/1000).toFixed(1)} cm³).`, 'ok');
+}
+
+/* ---------- import STL ---------- */
+const fileInput = document.getElementById('stl-input');
+document.getElementById('btn-import').addEventListener('click', ()=> fileInput.click());
+fileInput.addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev)=>{
+    try{
+      const geometry = new THREE.STLLoader().parse(ev.target.result);
+      setHull(geometry, file.name);
+    }catch(err){
+      log('Échec du parsing STL : ' + err.message, 'err');
+      setStatus('Erreur import STL — voir le journal.');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+});
+
+document.getElementById('btn-sample').addEventListener('click', ()=>{
+  const shape = new THREE.Shape();
+  const W=160, D=110, notchW=70, notchD=55;
+  shape.moveTo(-W/2,-D/2);
+  shape.lineTo(W/2,-D/2);
+  shape.lineTo(W/2, D/2 - notchD);
+  shape.lineTo(W/2 - notchW, D/2 - notchD);
+  shape.lineTo(W/2 - notchW, D/2);
+  shape.lineTo(-W/2, D/2);
+  shape.lineTo(-W/2,-D/2);
+  const geo = new THREE.ExtrudeGeometry(shape, {depth:90, bevelEnabled:false, curveSegments:2});
+  geo.rotateX(-Math.PI/2);
+  geo.translate(0,45,0);
+  setHull(geo.toNonIndexed(), 'forme d\'exemple (L)');
+});
+
+/* ---------- cell presets (Mode 1) ---------- */
+const presets = {
+  '21700': {d:21, l:70, cap:4.0, vnom:3.6, vmax:4.2, imax:20, mass:70},
+  '18650': {d:18, l:65, cap:3.0, vnom:3.6, vmax:4.2, imax:10, mass:45},
+  '4680':  {d:46, l:80, cap:20.0, vnom:3.6, vmax:4.2, imax:30, mass:180},
+};
+document.getElementById('cell-preset').addEventListener('change', (e)=>{
+  const p = presets[e.target.value];
+  if(!p) return;
+  document.getElementById('c-d').value=p.d;
+  document.getElementById('c-l').value=p.l;
+  document.getElementById('c-cap').value=p.cap;
+  document.getElementById('c-vnom').value=p.vnom;
+  document.getElementById('c-vmax').value=p.vmax;
+  document.getElementById('c-imax').value=p.imax;
+  document.getElementById('c-mass').value=p.mass;
+});
+document.getElementById('c-maxmode').addEventListener('change', (e)=>{
+  document.getElementById('p-row').style.display = e.target.checked ? 'none' : 'flex';
+});
+
+/* ---------- spatial hash for overlap checks ---------- */
+function makeSpatialHash(cellSize){
+  const map = new Map();
+  function key(x,y,z){ return `${Math.round(x/cellSize)}_${Math.round(y/cellSize)}_${Math.round(z/cellSize)}`; }
+  return {
+    insert(p){
+      const k = key(p.x,p.y,p.z);
+      if(!map.has(k)) map.set(k, []);
+      map.get(k).push(p);
+    },
+    tooClose(p, minDist){
+      const cx=Math.round(p.x/cellSize), cy=Math.round(p.y/cellSize), cz=Math.round(p.z/cellSize);
+      for(let dx=-1;dx<=1;dx++) for(let dy=-1;dy<=1;dy++) for(let dz=-1;dz<=1;dz++){
+        const k = `${cx+dx}_${cy+dy}_${cz+dz}`;
+        const bucket = map.get(k);
+        if(!bucket) continue;
+        for(const q of bucket){ if(p.distanceTo(q) < minDist) return true; }
+      }
+      return false;
+    }
+  };
+}
+
+/* ---------- packing engine (Mode 1) ---------- */
+async function yieldToUI(){ return new Promise(r=>setTimeout(r,0)); }
+
+async function generatePack(){
+  const btn = document.getElementById('btn-generate');
+  btn.disabled = true;
+  const progressWrap = document.getElementById('progress');
+  const bar = progressWrap.querySelector('.bar');
+  progressWrap.style.display='block'; bar.style.width='0%';
+
+  const d = parseFloat(document.getElementById('c-d').value);
+  const l = parseFloat(document.getElementById('c-l').value);
+  const clearance = parseFloat(document.getElementById('c-clear').value);
+  const quality = document.getElementById('c-quality').value;
+  const radius = d/2, height = l;
+
+  const bbox = S.bbox;
+  const dx = d + clearance;
+  const dz = dx * Math.sqrt(3)/2;
+  const dy = height + clearance;
+
+  const sizeY = bbox.max.y - bbox.min.y;
+  if(sizeY < height){
+    log('NO VALID SOLUTION — la hauteur du volume (' + sizeY.toFixed(1) + ' mm) est inférieure à la longueur de cellule (' + height.toFixed(1) + ' mm).', 'err');
+    setStatus('NO VALID SOLUTION : volume trop bas pour cette cellule.');
+    progressWrap.style.display='none'; btn.disabled=false;
+    return;
+  }
+
+  const nLayers = Math.max(1, Math.floor((sizeY - height) / dy) + 1);
+  const nSamplesPerCircle = quality === 'precise' ? 8 : 4;
+
+  const hash = makeSpatialHash(Math.max(dx,dy));
+  const placed = [];
+
+  const EPS = 0.05;
+  const testRadius = radius - EPS, testHalfHeight = height/2 - EPS;
+
+  function cellFits(center){
+    const topC = new THREE.Vector3(center.x, center.y+testHalfHeight, center.z);
+    const botC = new THREE.Vector3(center.x, center.y-testHalfHeight, center.z);
+    if(!pointInMesh(topC) || !pointInMesh(botC)) return false;
+    for(let k=0;k<nSamplesPerCircle;k++){
+      const ang = k * (2*Math.PI/nSamplesPerCircle);
+      const px = center.x + testRadius*Math.cos(ang);
+      const pz = center.z + testRadius*Math.sin(ang);
+      const top = new THREE.Vector3(px, center.y+testHalfHeight, pz);
+      const bot = new THREE.Vector3(px, center.y-testHalfHeight, pz);
+      if(!pointInMesh(top) || !pointInMesh(bot)) return false;
+    }
+    return true;
+  }
+
+  let candidatesTested = 0;
+  const approxTotal = nLayers * Math.ceil((bbox.max.z-bbox.min.z)/dz+1) * Math.ceil((bbox.max.x-bbox.min.x)/dx+1);
+  let sinceYield = 0;
+
+  for(let L=0; L<nLayers; L++){
+    const yCenter = bbox.min.y + height/2 + L*dy;
+    let rowIndex = 0;
+    for(let z = bbox.min.z; z <= bbox.max.z; z += dz, rowIndex++){
+      const xOffset = (rowIndex % 2 === 1) ? dx/2 : 0;
+      for(let x = bbox.min.x + xOffset; x <= bbox.max.x; x += dx){
+        candidatesTested++;
+        const center = new THREE.Vector3(x, yCenter, z);
+        if(!hash.tooClose(center, d + clearance) && cellFits(center)){
+          hash.insert(center);
+          placed.push(center);
+        }
+        sinceYield++;
+        if(sinceYield > 40){
+          sinceYield = 0;
+          bar.style.width = Math.min(99, (candidatesTested/Math.max(1,approxTotal))*100) + '%';
+          await yieldToUI();
+        }
+      }
+    }
+  }
+  bar.style.width = '100%';
+  await yieldToUI();
+  progressWrap.style.display='none';
+  btn.disabled = false;
+
+  log(`Placement terminé : ${placed.length} cellules positionnées et validées géométriquement (${candidatesTested} candidats testés, ${nLayers} couche(s)).`);
+
+  const Sn = Math.max(1, parseInt(document.getElementById('c-s').value,10));
+  const maxMode = document.getElementById('c-maxmode').checked;
+  let Pn;
+  if(maxMode){
+    Pn = Math.floor(placed.length / Sn);
+    if(Pn < 1){
+      log(`NO VALID SOLUTION — seulement ${placed.length} cellule(s) placée(s), impossible d'atteindre S=${Sn} (il faut au moins ${Sn} cellules).`, 'err');
+      setStatus('NO VALID SOLUTION : capacité insuffisante pour S=' + Sn + '.');
+      renderCells(placed, [], Sn, 0);
+      updateStats(null);
+      return;
+    }
+    log(`Mode Maximum Cells — Best configuration found: ${Sn}S${Pn}P — ${Sn*Pn} cells wired (+ ${placed.length-Sn*Pn} libres).`, 'ok');
+  } else {
+    Pn = Math.max(1, parseInt(document.getElementById('c-p').value,10));
+    if(placed.length < Sn*Pn){
+      log(`NO VALID SOLUTION — ${Sn}S${Pn}P demande ${Sn*Pn} cellules, seulement ${placed.length} ont pu être placées dans le volume avec cet espacement.`, 'err');
+      setStatus(`NO VALID SOLUTION : ${Sn*Pn} cellules requises, ${placed.length} disponibles.`);
+      renderCells(placed, [], Sn, 0);
+      updateStats(null);
+      return;
+    }
+  }
+
+  const target = Sn*Pn;
+  const wired = placed.slice(0, target);
+  const spare = placed.slice(target);
+  renderCells(wired, spare, Sn, Pn);
+
+  const cell = {
+    d, l, radius, height,
+    cap: parseFloat(document.getElementById('c-cap').value),
+    vnom: parseFloat(document.getElementById('c-vnom').value),
+    vmax: parseFloat(document.getElementById('c-vmax').value),
+    imax: parseFloat(document.getElementById('c-imax').value),
+    mass: parseFloat(document.getElementById('c-mass').value),
+  };
+  updateStats({S:Sn, P:Pn, wiredCount:wired.length, spareCount:spare.length, cell});
+  setStatus(`${Sn}S${Pn}P — ${wired.length} cellules câblées (${spare.length} libres).`);
+}
+document.getElementById('btn-generate').addEventListener('click', ()=>{ generatePack().catch(err=>log('Erreur: '+err.message,'err')); });
+
+function groupColor(i, n){
+  const hue = (i / Math.max(1,n)) * 300;
+  return new THREE.Color(`hsl(${20+hue*0.7}, 55%, 58%)`);
+}
+
+function renderCells(wired, spare, Sn, Pn){
+  S.cellsGroup.clear();
+  const d = parseFloat(document.getElementById('c-d').value);
+  const l = parseFloat(document.getElementById('c-l').value);
+  const geo = new THREE.CylinderGeometry(d/2, d/2, l, 16);
+  const legend = document.getElementById('legend');
+  legend.innerHTML = '';
+  const usedGroups = new Set();
+
+  wired.forEach((center, idx)=>{
+    const groupIndex = Math.floor(idx / Pn);
+    const color = groupColor(groupIndex, Sn);
+    const mat = new THREE.MeshStandardMaterial({color, metalness:0.35, roughness:0.4});
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.copy(center);
+    S.cellsGroup.add(mesh);
+    if(!usedGroups.has(groupIndex)){
+      usedGroups.add(groupIndex);
+      const sw = document.createElement('span');
+      sw.style.fontSize='11px'; sw.style.color='var(--text-1)';
+      sw.innerHTML = `<span class="sw" style="background:#${color.getHexString()}"></span>S${groupIndex+1}`;
+      legend.appendChild(sw);
+    }
+  });
+  const spareMat = new THREE.MeshStandardMaterial({color:0x3a4048, metalness:0.1, roughness:0.8, transparent:true, opacity:0.55});
+  spare.forEach(center=>{
+    const mesh = new THREE.Mesh(geo, spareMat);
+    mesh.position.copy(center);
+    S.cellsGroup.add(mesh);
+  });
+  document.getElementById('cell-count').textContent = (wired.length+spare.length) + ' cellules';
+}
+
+function fmt(n, d=2){ return Number.isFinite(n) ? n.toFixed(d) : '—'; }
+
+function updateStats(data){
+  if(!data){
+    ['s-config','s-cells','s-spare','s-vnom','s-vmax','s-cap','s-energy','s-imax','s-pmax','s-mass','m-volused','m-fill']
+      .forEach(id=>document.getElementById(id).textContent='—');
+    return;
+  }
+  const {S:Sn,P:Pn,wiredCount,spareCount,cell} = data;
+  const vnom = Sn*cell.vnom, vmax = Sn*cell.vmax;
+  const cap = Pn*cell.cap;
+  const imax = Pn*cell.imax;
+  const energy = vnom*cap;
+  const pmax = vnom*imax;
+  const mass = wiredCount*cell.mass;
+  const volUsed = wiredCount * Math.PI * cell.radius*cell.radius * cell.height;
+  const fill = S.volAvail ? (volUsed/S.volAvail*100) : 0;
+
+  document.getElementById('s-config').textContent = `${Sn}S${Pn}P`;
+  document.getElementById('s-cells').textContent = wiredCount;
+  document.getElementById('s-spare').textContent = spareCount;
+  document.getElementById('s-vnom').textContent = fmt(vnom,2)+' V';
+  document.getElementById('s-vmax').textContent = fmt(vmax,2)+' V';
+  document.getElementById('s-cap').textContent = fmt(cap,2)+' Ah';
+  document.getElementById('s-energy').textContent = fmt(energy,1)+' Wh';
+  document.getElementById('s-imax').textContent = fmt(imax,1)+' A';
+  document.getElementById('s-pmax').textContent = fmt(pmax,0)+' W';
+  document.getElementById('s-mass').textContent = fmt(mass/1000,3)+' kg';
+  document.getElementById('m-volused').textContent = fmt(volUsed/1000,1)+' cm³';
+  document.getElementById('m-fill').textContent = fmt(fill,1)+' %';
+}
+
+/* ================================================================
+   MODE 2 — DESIGN FROM REQUIREMENTS
+   ================================================================ */
+
+let currentMode = 'designer';
+
+/* ---------- animation helpers ---------- */
+function easeInOutCubic(t){ return t<0.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2; }
+const anims = [];
+function animateObj(update, dur, onDone){
+  const a = {t0: performance.now(), dur, update, onDone, done:false};
+  anims.push(a);
+  return a;
+}
+function stepAnims(now){
+  for(let i=anims.length-1;i>=0;i--){
+    const a = anims[i];
+    let t = (now - a.t0)/a.dur;
+    if(t>=1){ t=1; a.done=true; }
+    a.update(easeInOutCubic(Math.min(1,t)));
+    if(a.done){ anims.splice(i,1); if(a.onDone) a.onDone(); }
+  }
+}
+const camTween = {active:false};
+function flyTo(pos, tgt, dur){
+  dur = dur||650;
+  camTween.active=true;
+  camTween.fromPos=camera.position.clone();
+  camTween.fromTgt=controls.target.clone();
+  camTween.toPos=pos; camTween.toTgt=tgt;
+  camTween.t0=performance.now(); camTween.dur=dur;
+}
+function updateCameraTween(){
+  if(!camTween.active) return;
+  const now=performance.now();
+  let t=(now-camTween.t0)/camTween.dur;
+  if(t>=1){ t=1; camTween.active=false; }
+  const e=easeInOutCubic(Math.min(1,t));
+  camera.position.lerpVectors(camTween.fromPos, camTween.toPos, e);
+  controls.target.lerpVectors(camTween.fromTgt, camTween.toTgt, e);
+}
+
+/* ---------- REQ state ---------- */
+const REQ = {
+  group: new THREE.Group(),
+  ground: null,
+  dynamic: [],
+  matsByCat: {},
+  baseColors: {},
+  result: null,
+  solutions: [],
+  selectedKey: 'minVol',
+  explodeCur: 0,
+  explodeTarget: 0,
+  build: 1,
+  buildTarget: 1,
+  viewDist: 300,
+  selectedCat: null,
+  exploded: false,
+  breakdown: false,
+};
+scene.add(REQ.group);
+
+function registerMat(cat, mat, baseColor){
+  if(!REQ.matsByCat[cat]) REQ.matsByCat[cat]=[];
+  REQ.matsByCat[cat].push({mat, baseColor: baseColor ? baseColor.clone() : mat.color.clone()});
+}
+
+function clearGroup(g){
+  while(g.children.length){
+    const c = g.children[0];
+    g.remove(c);
+    if(c.geometry && !c.geometry.__shared) c.geometry.dispose();
+    if(c.material){
+      if(Array.isArray(c.material)) c.material.forEach(m=>{ if(!m.__shared) m.dispose(); });
+      else if(!c.material.__shared) c.material.dispose();
+    }
+  }
+}
+
+/* ---------- cell catalog (Mode 2) ---------- */
+const CELL_CATALOG = {
+  '18650':     {form:'cyl', d:18,  l:65,  w:0, t:0, h:0, cap:3.0,  vnom:3.6, vmin:3.0, vmax:4.2, icont:10,  ipeak:20,  icharge:3,  mass:45,   clear:1.5, tmax:60},
+  '21700':     {form:'cyl', d:21,  l:70,  w:0, t:0, h:0, cap:4.0,  vnom:3.6, vmin:3.0, vmax:4.2, icont:20,  ipeak:40,  icharge:6,  mass:70,   clear:1.5, tmax:60},
+  '32140':     {form:'cyl', d:32,  l:140, w:0, t:0, h:0, cap:15.0, vnom:3.2, vmin:2.5, vmax:3.65,icont:30,  ipeak:60,  icharge:15, mass:300,  clear:2.0, tmax:55},
+  '4680':      {form:'cyl', d:46,  l:80,  w:0, t:0, h:0, cap:20.0, vnom:3.6, vmin:3.0, vmax:4.2, icont:30,  ipeak:60,  icharge:10, mass:180,  clear:2.0, tmax:60},
+  'pouch':     {form:'pris',d:0,   l:0,   w:100,t:12, h:180, cap:25.0, vnom:3.7, vmin:3.0, vmax:4.2, icont:50,  ipeak:100, icharge:25, mass:400,  clear:2.0, tmax:55},
+  'prismatic': {form:'pris',d:0,   l:0,   w:130,t:26, h:180, cap:60.0, vnom:3.2, vmin:2.5, vmax:3.65,icont:100, ipeak:200, icharge:50, mass:1400, clear:3.0, tmax:55},
+};
+
+function syncCellInputs(type){
+  const base = CELL_CATALOG[type];
+  const customFormRow = document.getElementById('custom-form-row');
+  let form = base.form;
+  if(type==='custom'){
+    customFormRow.style.display = 'flex';
+    form = document.getElementById('r-custom-form').value;
+  } else {
+    customFormRow.style.display = 'none';
+  }
+  // populate field values from catalog (for custom, keep current values)
+  if(type!=='custom'){
+    document.getElementById('r-cap-cell').value = base.cap;
+    document.getElementById('r-vnom-cell').value = base.vnom;
+    document.getElementById('r-vmin-cell').value = base.vmin;
+    document.getElementById('r-vmax-cell').value = base.vmax;
+    document.getElementById('r-icont-cell').value = base.icont;
+    document.getElementById('r-ipeak-cell').value = base.ipeak;
+    document.getElementById('r-icharge-cell').value = base.icharge;
+    document.getElementById('r-mass-cell').value = base.mass;
+    document.getElementById('r-clear-cell').value = base.clear;
+    if(form==='cyl'){
+      document.getElementById('r-d').value = base.d;
+      document.getElementById('r-l').value = base.l;
+    } else {
+      document.getElementById('r-w').value = base.w;
+      document.getElementById('r-t').value = base.t;
+      document.getElementById('r-h').value = base.h;
+    }
+  }
+  applyCellForm(form);
+}
+function applyCellForm(form){
+  const isCyl = form==='cyl';
+  document.querySelectorAll('.cyl-field').forEach(el=>el.style.display = isCyl ? 'flex' : 'none');
+  document.querySelectorAll('.pris-field').forEach(el=>el.style.display = isCyl ? 'none' : 'flex');
+}
+document.getElementById('r-cell-type').addEventListener('change', e=>{ syncCellInputs(e.target.value); scheduleRecompute(); });
+document.getElementById('r-custom-form').addEventListener('change', e=>{ applyCellForm(e.target.value); scheduleRecompute(); });
+
+function readReqCell(){
+  const type = document.getElementById('r-cell-type').value;
+  let form = CELL_CATALOG[type].form;
+  if(type==='custom') form = document.getElementById('r-custom-form').value;
+  const num = id => { const v = parseFloat(document.getElementById(id).value); return Number.isFinite(v)?v:0; };
+  const cell = {
+    form,
+    cap: num('r-cap-cell'),
+    vnom: num('r-vnom-cell'),
+    vmin: num('r-vmin-cell'),
+    vmax: num('r-vmax-cell'),
+    icont: num('r-icont-cell'),
+    ipeak: num('r-ipeak-cell'),
+    icharge: num('r-icharge-cell'),
+    mass: num('r-mass-cell'),
+    clear: num('r-clear-cell'),
+  };
+  if(form==='cyl'){ cell.d = num('r-d'); cell.l = num('r-l'); }
+  else { cell.w = num('r-w'); cell.t = num('r-t'); cell.h = num('r-h'); }
+  return cell;
+}
+
+function readReq(){
+  const num = id => { const raw = document.getElementById(id).value.trim(); if(raw==='') return null; const v=parseFloat(raw); return Number.isFinite(v)?v:null; };
+  return {
+    vnom: num('r-vnom'), vmin: num('r-vmin'), vmax: num('r-vmax'),
+    pcont: num('r-pcont'), ppeak: num('r-ppeak'),
+    icont: num('r-icont'), ipeak: num('r-ipeak'),
+    energy: num('r-energ'), cap: num('r-cap'),
+    margin: num('r-margin')||0,
+    override: document.getElementById('r-override').checked,
+    s: parseInt(document.getElementById('r-s').value,10)||1,
+    p: parseInt(document.getElementById('r-p').value,10)||1,
+  };
+}
+
+/* ---------- electrical solver ---------- */
+function solveSP(cell, req, warnings){
+  const m = 1 + (req.margin||0)/100;
+  let S, P;
+  if(req.override){
+    S = Math.max(1, req.s); P = Math.max(1, req.p);
+  } else {
+    S = req.vnom && cell.vnom>0 ? Math.max(1, Math.round(req.vnom/cell.vnom))
+      : (req.vmax ? Math.max(1, Math.floor(req.vmax/cell.vmax)) : 6);
+    if(req.vmin && S*cell.vmin > req.vmin) S--;
+    if(req.vmax && S*cell.vmax > req.vmax) S--;
+    S = Math.max(1, S);
+
+    P = 1;
+    if(req.icont) P = Math.max(P, Math.ceil(req.icont*m / cell.icont));
+    if(req.ipeak) P = Math.max(P, Math.ceil(req.ipeak*m / cell.ipeak));
+    if(req.cap)   P = Math.max(P, Math.ceil(req.cap*m / cell.cap));
+    if(req.energy) P = Math.max(P, Math.ceil(req.energy*m / (S*cell.vnom*cell.cap)));
+    if(req.pcont) P = Math.max(P, Math.ceil(req.pcont*m / (S*cell.vnom*cell.icont)));
+    if(req.ppeak) P = Math.max(P, Math.ceil(req.ppeak*m / (S*cell.vnom*cell.ipeak)));
+    P = Math.max(1, P);
+
+    const hasReq = req.pcont||req.icont||req.cap||req.energy||req.ppeak||req.ipeak||req.vnom||req.vmin||req.vmax;
+    if(!hasReq){
+      warnings.push({level:'warn', msg:'Aucune exigence renseignée — configuration par défaut utilisée (10S1P).'});
+    }
+  }
+  return {S, P};
+}
+
+function voltageWarnings(cell, S, req, warnings){
+  const vnom = S*cell.vnom, vmin = S*cell.vmin, vmax = S*cell.vmax;
+  if(req.vmin && vmin > req.vmin){
+    const s2 = Math.max(1, Math.floor(req.vmin/cell.vmin));
+    warnings.push({level:'warn', msg:`V min pack (${vmin.toFixed(1)}V) > V min requis (${req.vmin}V) — suggéré S=${s2}.`});
+  }
+  if(req.vmax && vmax > req.vmax){
+    const s2 = Math.max(1, Math.floor(req.vmax/cell.vmax));
+    warnings.push({level:'warn', msg:`V max pack (${vmax.toFixed(1)}V) > V max requis (${req.vmax}V) — suggéré S=${s2}.`});
+  }
+  if(req.vnom && Math.abs(vnom-req.vnom) > cell.vnom*0.6){
+    warnings.push({level:'warn', msg:`V nominal ${vnom.toFixed(1)}V diffère de la cible ${req.vnom}V (pas de S exact possible).`});
+  }
+}
+
+/* ---------- physical layout ---------- */
+function cellFootprint(cell, orientation){
+  if(cell.form==='cyl'){
+    if(orientation==='vertical') return {x:cell.d, z:cell.d, y:cell.l};
+    return {x:cell.l, z:cell.d, y:cell.d};
+  }
+  if(orientation==='vertical') return {x:cell.t, z:cell.w, y:cell.h};
+  return {x:cell.w, z:cell.t, y:cell.h};
+}
+
+function layoutCells(cell, S, P, opts){
+  const N = S*P;
+  const fp = cellFootprint(cell, opts.orientation);
+  const clear = cell.clear;
+  const hex = opts.hex && cell.form==='cyl' && opts.orientation==='vertical';
+  let cols, rows;
+  if(opts.cols && opts.rows){ cols=opts.cols; rows=opts.rows; }
+  else { cols = Math.ceil(Math.sqrt(N)); rows = Math.ceil(N/cols); }
+  const layers = opts.layers || 1;
+  const rowsPerLayer = Math.max(1, Math.ceil(rows/layers));
+  const dx = hex ? (cell.d + clear) : (fp.x + clear);
+  const dz = hex ? (cell.d + clear)*Math.sqrt(3)/2 : (fp.z + clear);
+  const dy = fp.y + clear;
+  const positions = [];
+  let idx = 0;
+  for(let L=0; L<layers && idx<N; L++){
+    const yBase = L*dy;
+    for(let r=0; r<rowsPerLayer && idx<N; r++){
+      const z = r*dz;
+      const xoff = hex ? ((r%2)? dx/2 : 0) : 0;
+      for(let c=0; c<cols && idx<N; c++){
+        const x = c*dx + xoff;
+        positions.push({x, y:yBase, z, idx});
+        idx++;
+      }
+    }
+  }
+  // bounding box of actual cell extents
+  let minX=Infinity,minY=Infinity,minZ=Infinity,maxX=-Infinity,maxY=-Infinity,maxZ=-Infinity;
+  positions.forEach(p=>{
+    const ex = cell.form==='cyl'
+      ? (opts.orientation==='vertical' ? cell.d/2 : cell.l/2)
+      : (opts.orientation==='vertical' ? cell.t/2 : cell.w/2);
+    const ez = cell.form==='cyl'
+      ? cell.d/2
+      : (opts.orientation==='vertical' ? cell.w/2 : cell.t/2);
+    const ey = fp.y/2;
+    minX=Math.min(minX,p.x-ex); maxX=Math.max(maxX,p.x+ex);
+    minZ=Math.min(minZ,p.z-ez); maxZ=Math.max(maxZ,p.z+ez);
+    minY=Math.min(minY,p.y-ey); maxY=Math.max(maxY,p.y+ey);
+  });
+  // shift so min corner = (0,0,0)
+  positions.forEach(p=>{ p.x-=minX; p.y-=minY; p.z-=minZ; });
+  return {positions, block:{w:maxX-minX, h:maxY-minY, d:maxZ-minZ}, cols, rows, layers, hex, dx, dz, dy};
+}
+
+/* ---------- full pack sizing ---------- */
+function makePack(cell, S, P, opts){
+  opts = Object.assign({orientation:'vertical', hex:false, layers:1, thermal:false, cols:null, rows:null, label:''}, opts);
+  const N = S*P;
+  const electrical = {
+    vnom: S*cell.vnom, vmin: S*cell.vmin, vmax: S*cell.vmax,
+    cap: P*cell.cap, energy: S*cell.vnom*P*cell.cap,
+    icont: P*cell.icont, ipeak: P*cell.ipeak,
+    pcont: S*cell.vnom*P*cell.icont, ppeak: S*cell.vnom*P*cell.ipeak,
+  };
+  const layout = layoutCells(cell, S, P, opts);
+  const block = layout.block;
+
+  const busbarT = Math.max(1.2, Math.min(6, electrical.icont/40));
+  const wiringR = Math.max(1.2, Math.sqrt(Math.max(1,electrical.icont)/(Math.PI*5)));
+  const bms = { dx: Math.min(120, 24 + S*3), dy: 12, dz: 50, mass: 30 + S*2 };
+  const mainConn = { dx:35, dy:20, dz:18, mass:60 };
+  const chargeConn = { dx:25, dy:18, dz:15, mass:35 };
+  const wallT = 2.5, wallBottom = 3, wallTop = 2.5, g = 3, supportT = 2, iso = 0.5;
+  const thermalT = opts.thermal ? 8 : 0;
+  const frontGap = Math.max(g, mainConn.dz, chargeConn.dz);
+  const topZone = Math.max(busbarT + wiringR*2 + 6, bms.dy);
+
+  const L = block.w + 2*g + 2*wallT;
+  const W = block.d + frontGap + g + 2*wallT;
+  const H = wallBottom + g + thermalT + supportT + block.h + supportT + topZone + g + wallTop;
+  const envelope = {L, W, H, vol: L*W*H};
+
+  // volumes (mm3)
+  const cellVol = cell.form==='cyl' ? Math.PI*Math.pow(cell.d/2,2)*cell.l : cell.w*cell.t*cell.h;
+  const vCells = N*cellVol;
+  const vBusbars = block.w * block.d * busbarT * 0.6;
+  const wiringLen = 2*(L+W+H) + S*12;
+  const vWiring = Math.PI*wiringR*wiringR * wiringLen;
+  const vBMS = bms.dx*bms.dy*bms.dz;
+  const vConnectors = mainConn.dx*mainConn.dy*mainConn.dz + chargeConn.dx*chargeConn.dy*chargeConn.dz;
+  const vSupports = 2*block.w*block.d*supportT + 2*(block.w+block.d)*block.h*supportT*0.3;
+  const blockSurf = 2*(block.w*block.h + block.w*block.d + block.d*block.h);
+  const vIsolation = blockSurf * iso;
+  const vThermal = opts.thermal ? block.w*block.d*thermalT : 0;
+  const vHousing = 2*(L+W)*H*wallT + (L*W)*(wallBottom+wallTop);
+  const vInterior = (L-2*wallT)*(W-2*wallT)*(H-wallBottom-wallTop);
+  const vPlaced = vCells + vBusbars + vWiring + vBMS + vConnectors + vSupports + vIsolation + vThermal;
+  const vClearance = Math.max(0, vInterior - vPlaced);
+
+  const breakdown = {
+    cells:vCells, bms:vBMS, connectors:vConnectors, wiring:vWiring, busbars:vBusbars,
+    supports:vSupports, isolation:vIsolation, thermal:vThermal, clearance:vClearance, housing:vHousing,
+    total: envelope.vol,
+  };
+
+  // masses (g)
+  const mCells = N*cell.mass;
+  const mBMS = bms.mass;
+  const mConnectors = mainConn.mass + chargeConn.mass;
+  const mWiring = vWiring * 0.00896;
+  const mBusbars = vBusbars * 0.00896;
+  const mSupports = vSupports * 0.0012;
+  const mIsolation = vIsolation * 0.0012;
+  const mThermal = vThermal * 0.0027;
+  const mHousing = vHousing * 0.0027;
+  const totalMass = mCells + mBMS + mConnectors + mWiring + mBusbars + mSupports + mIsolation + mThermal + mHousing;
+  const massParts = {cells:mCells, bms:mBMS, connectors:mConnectors, wiring:mWiring, busbars:mBusbars, supports:mSupports, isolation:mIsolation, thermal:mThermal, housing:mHousing, total:totalMass};
+
+  const energyDensityVol = electrical.energy / (envelope.vol/1e6); // Wh/L
+  const energyDensityMass = electrical.energy / (totalMass/1000);  // Wh/kg
+
+  return {
+    S, P, N, cell, electrical, layout, opts, envelope, breakdown, massParts,
+    comps: {bms, mainConn, chargeConn, busbarT, wiringR},
+    energyDensityVol, energyDensityMass,
+    wallT, g, frontGap, wallBottom, wallTop, supportT, thermalT, topZone,
+  };
+}
+
+function arrangementDesc(r){
+  const ori = r.opts.orientation==='vertical' ? 'verticales' : 'horizontales';
+  const pack = r.layout.hex ? 'hexagonal' : 'rectangulaire';
+  return `${ori}, ${pack}, ${r.layout.layers} couche(s)`;
+}
+
+function optimizePack(cell, S, P, objective, extra){
+  extra = extra||{};
+  const cands = [];
+  const oris = ['vertical','horizontal'];
+  const maxLayers = Math.max(1, Math.min(4, Math.ceil((S*P)/6)));
+  for(const orientation of oris){
+    for(const hex of [false,true]){
+      if(hex && !(cell.form==='cyl' && orientation==='vertical')) continue;
+      for(let layers=1; layers<=maxLayers; layers++){
+        cands.push(makePack(cell,S,P,{orientation,hex,layers,thermal:extra.thermal||false}));
+      }
+    }
+  }
+  cands.push(makePack(cell,S,P,{orientation:'vertical',hex:false,layers:1,cols:P,rows:S,thermal:extra.thermal||false}));
+  let best = cands[0];
+  if(objective==='vol'){
+    for(const c of cands) if(c.envelope.vol < best.envelope.vol) best=c;
+  } else if(objective==='mass'){
+    for(const c of cands) if(c.massParts.total < best.massParts.total) best=c;
+  } else { // balanced
+    let bestScore = Infinity;
+    for(const c of cands){
+      const score = (c.envelope.vol/1e6)*0.6 + c.massParts.total*0.4 + (c.opts.layers-1)*600;
+      if(score < bestScore){ bestScore = score; best = c; }
+    }
+  }
+  return best;
+}
+
+/* ---------- recompute + solutions ---------- */
+let reqDebounce = null;
+function scheduleRecompute(){
+  clearTimeout(reqDebounce);
+  reqDebounce = setTimeout(()=>{ if(currentMode==='req') recompute(); }, 220);
+}
+
+function recompute(){
+  const cell = readReqCell();
+  if(cell.form==='cyl' && (!cell.d || !cell.l)){ return; }
+  if(cell.form==='pris' && (!cell.w || !cell.t || !cell.h)){ return; }
+  if(!cell.vnom || !cell.cap){ return; }
+
+  const req = readReq();
+  const warnings = [];
+  const sp = solveSP(cell, req, warnings);
+  voltageWarnings(cell, sp.S, req, warnings);
+
+  const N0 = sp.S*sp.P;
+  if(N0 > 800){
+    warnings.push({level:'err', msg:`Configuration très dense (${N0} cellules) — visualisation simplifiée.`});
+  }
+
+  const P0 = sp.P;
+  const extra = Math.max(1, Math.round(P0*0.2));
+  const solutions = [
+    {key:'minVol',    title:'Minimum Volume', desc:'Volume minimal', p:P0,       thermal:false, objective:'vol'},
+    {key:'minMass',   title:'Minimum Mass',   desc:'Masse minimale', p:P0,       thermal:false, objective:'mass'},
+    {key:'maxEnergy', title:'Maximum Energy', desc:'Énergie maximisée', p:P0+extra, thermal:false, objective:'vol'},
+    {key:'maxPower',  title:'Maximum Power',  desc:'Puissance maximisée', p:P0+extra, thermal:true,  objective:'vol'},
+    {key:'balanced',  title:'Balanced',       desc:'Compromis', p:P0,       thermal:false, objective:'balanced'},
+  ];
+
+  const results = solutions.map(sol=>{
+    let r;
+    if(sol.objective==='balanced'){
+      r = makePack(cell, sp.S, sol.p, {orientation:'vertical', hex:false, layers:1, cols:sol.p, rows:sp.S, thermal:sol.thermal});
+    } else {
+      r = optimizePack(cell, sp.S, sol.p, sol.objective, {thermal:sol.thermal});
+    }
+    sol.result = r;
+    return r;
+  });
+
+  REQ.solutions = solutions;
+  if(!solutions.some(s=>s.key===REQ.selectedKey)) REQ.selectedKey = 'minVol';
+
+  renderSolutions(solutions);
+  renderWarnings(warnings);
+  applySolution(REQ.selectedKey, false);
+}
+
+function applySolution(key, reframe){
+  REQ.selectedKey = key;
+  const sol = REQ.solutions.find(s=>s.key===key);
+  if(!sol) return;
+  build3D(sol.result, {reframe});
+  renderResultPanel(sol.result);
+  document.querySelectorAll('#q-solutions .sol-card').forEach(el=>{
+    el.classList.toggle('active', el.dataset.key===key);
+  });
+}
+
+/* ---------- right panel ---------- */
+function renderWarnings(warnings){
+  const box = document.getElementById('q-warnings');
+  const block = document.getElementById('warnings-block');
+  if(!warnings.length){ box.innerHTML=''; block.style.display='none'; return; }
+  block.style.display='';
+  box.innerHTML = warnings.map(w=>`<div class="item ${w.level}">${w.msg}</div>`).join('');
+}
+
+function renderResultPanel(r){
+  const el = r.electrical;
+  const env = r.envelope;
+  const bd = r.breakdown;
+  document.getElementById('q-config').textContent = `${r.S}S${r.P}P`;
+  document.getElementById('q-cells').textContent = r.N;
+  document.getElementById('q-vnom').textContent = fmt(el.vnom,1)+' V';
+  document.getElementById('q-vrange').textContent = `${fmt(el.vmin,1)} / ${fmt(el.vmax,1)} V`;
+  document.getElementById('q-cap').textContent = fmt(el.cap,2)+' Ah';
+  document.getElementById('q-energy').textContent = fmt(el.energy,1)+' Wh';
+  document.getElementById('q-icont').textContent = fmt(el.icont,1)+' A';
+  document.getElementById('q-ipeak').textContent = fmt(el.ipeak,1)+' A';
+  document.getElementById('q-pcont').textContent = fmt(el.pcont,0)+' W';
+  document.getElementById('q-ppeak').textContent = fmt(el.ppeak,0)+' W';
+
+  document.getElementById('q-dims').textContent = `${fmt(env.L,0)} / ${fmt(env.W,0)} / ${fmt(env.H,0)} mm`;
+  document.getElementById('q-vol').textContent = fmt(env.vol/1000,1)+' cm³';
+  document.getElementById('q-mass').textContent = fmt(r.massParts.total/1000,3)+' kg';
+  document.getElementById('q-layers').textContent = r.layout.layers;
+  document.getElementById('q-arrangement').textContent = arrangementDesc(r);
+  document.getElementById('q-dens').textContent = `${fmt(r.energyDensityVol,0)} Wh/L · ${fmt(r.energyDensityMass,0)} Wh/kg`;
+
+  document.getElementById('q-bms').textContent = `${fmt(r.comps.bms.dx,0)}×${fmt(r.comps.bms.dy,0)}×${fmt(r.comps.bms.dz,0)} · ${fmt(r.comps.bms.mass,0)}g`;
+  document.getElementById('q-conn-main').textContent = `${fmt(r.comps.mainConn.dx,0)}×${fmt(r.comps.mainConn.dy,0)}×${fmt(r.comps.mainConn.dz,0)} · ${fmt(r.comps.mainConn.mass,0)}g`;
+  document.getElementById('q-conn-charge').textContent = `${fmt(r.comps.chargeConn.dx,0)}×${fmt(r.comps.chargeConn.dy,0)}×${fmt(r.comps.chargeConn.dz,0)} · ${fmt(r.comps.chargeConn.mass,0)}g`;
+  document.getElementById('q-wiring').textContent = fmt(bd.wiring/1000,2)+' cm³ · '+fmt(r.massParts.wiring,0)+'g';
+  document.getElementById('q-busbars').textContent = fmt(bd.busbars/1000,2)+' cm³ · '+fmt(r.massParts.busbars,0)+'g';
+  document.getElementById('q-supports').textContent = fmt(bd.supports/1000,2)+' cm³ · '+fmt(r.massParts.supports,0)+'g';
+  document.getElementById('q-isolation').textContent = fmt(bd.isolation/1000,2)+' cm³';
+  document.getElementById('q-clearance').textContent = fmt(bd.clearance/1000,1)+' cm³';
+
+  document.getElementById('cell-count').textContent = r.N + ' cellules';
+  setStatus(`${r.S}S${r.P}P — ${r.N} cellules · ${fmt(el.energy,0)} Wh · ${fmt(env.L,0)}×${fmt(env.W,0)}×${fmt(env.H,0)} mm`);
+  renderBreakdown(bd, env);
+}
+
+function renderSolutions(solutions){
+  const host = document.getElementById('q-solutions');
+  host.innerHTML = solutions.map(sol=>{
+    const r = sol.result;
+    return `<div class="sol-card ${sol.key===REQ.selectedKey?'active':''}" data-key="${sol.key}">
+      <div class="t"><span>${sol.title}</span><span class="sp">${r.S}S${r.P}P</span></div>
+      <div class="m">${fmt(r.envelope.vol/1000,0)} cm³ · ${fmt(r.massParts.total/1000,2)} kg · ${fmt(r.electrical.energy,0)} Wh</div>
+    </div>`;
+  }).join('');
+}
+document.getElementById('q-solutions').addEventListener('click', e=>{
+  const card = e.target.closest('.sol-card');
+  if(!card) return;
+  applySolution(card.dataset.key, true);
+});
+
+/* ---------- volume breakdown ---------- */
+const BD_ORDER = [
+  ['cells','Cellules','#c9835a'],
+  ['bms','BMS','#2f9e6f'],
+  ['connectors','Connecteurs','#e0a52c'],
+  ['wiring','Câblage','#e5484d'],
+  ['busbars','Busbars','#d08a5a'],
+  ['supports','Supports','#8a94a0'],
+  ['isolation','Isolation','#6b7480'],
+  ['clearance','Clearance','#39424d'],
+  ['housing','Boîtier','#5b8def'],
+  ['thermal','Thermique','#38b2ac'],
+];
+function renderBreakdown(bd, env){
+  const host = document.getElementById('bd-bars');
+  const total = bd.total || env.vol;
+  host.innerHTML = BD_ORDER.map(([key,label,color])=>{
+    const v = bd[key]||0;
+    const pct = total ? (v/total*100) : 0;
+    return `<div class="bd-row">
+      <span class="nm">${label}</span>
+      <div class="barwrap"><div class="barfill" style="width:${Math.max(0.5,pct).toFixed(1)}%;background:${color}"></div></div>
+      <span class="vl">${fmt(v/1000,1)} cm³</span>
+    </div>`;
+  }).join('');
+  document.getElementById('bd-total').textContent = `${fmt(total/1000,1)} cm³`;
+}
+
+/* ---------- 3D build ---------- */
+const CAT_EXPLODE = {
+  wall:[0,1,0,1.0], bottom:[0,-1,0,1.2], support:[0,1,0,0.9], cell:[0,1,0,0.5],
+  busbar:[0,1,0,1.1], bms:[0,1,0,1.3], wiring:[0,1,0,1.2], main:[0,0,-1,1.4],
+  charge:[0,0,-1,1.2], thermal:[0,-1,0,0.8],
+};
+const CAT_BUILD = { bottom:0.0, wall:0.05, support:0.15, thermal:0.2, cell:0.32, busbar:0.55, bms:0.65, wiring:0.72, main:0.8, charge:0.85 };
+
+function build3D(r, opts){
+  opts = opts||{reframe:true};
+  clearGroup(REQ.group);
+  REQ.dynamic = [];
+  REQ.matsByCat = {};
+  REQ.selectedCat = null;
+  document.getElementById('sel-panel').style.display='none';
+
+  const cell = r.cell;
+  const block = r.layout.block;
+  const env = r.envelope;
+  const L = env.L, W = env.W, H = env.H;
+
+  // origin = envelope front-left-bottom corner; then center the group
+  const cellOx = r.wallT + r.g;
+  const cellOz = r.wallT + r.frontGap;
+  const cellOy = r.wallBottom + r.g + r.thermalT + r.supportT;
+  const topBase = cellOy + block.h + r.supportT; // top of cells + top support plate
+
+  REQ.explodeDist = Math.max(L,W,H)*0.22 + 20;
+  REQ.viewDist = Math.max(L,W,H)*1.7 + 40;
+
+  function track(cat, mesh, home, buildAt){
+    const ex = CAT_EXPLODE[cat]||[0,0,0,0];
+    const entry = {mesh, cat, home: home.clone(), dir:[ex[0],ex[1],ex[2]], mag:ex[3], buildAt:(buildAt!=null?buildAt:(CAT_BUILD[cat]!=null?CAT_BUILD[cat]:0.5)), baseScale:1};
+    REQ.dynamic.push(entry);
+    mesh.userData.cat = cat;
+    return entry;
+  }
+
+  function addBox(cat, w,h,d, color, opacity, pos, o){
+    o = o||{};
+    const geo = new THREE.BoxGeometry(w,h,d);
+    geo.__shared = true;
+    const mat = new THREE.MeshStandardMaterial({color, metalness:o.metalness!=null?o.metalness:0.2, roughness:o.roughness!=null?o.roughness:0.6, transparent: opacity<1, opacity:opacity!=null?opacity:1, depthWrite: opacity>=1});
+    mat.__shared = true;
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set(pos.x,pos.y,pos.z);
+    REQ.group.add(mesh);
+    registerMat(cat, mat, new THREE.Color(color));
+    track(cat, mesh, mesh.position, o.buildAt);
+    return mesh;
+  }
+
+  function addCyl(cat, d, len, sideColor, pos, o){
+    o = o||{};
+    const geo = new THREE.CylinderGeometry(d/2,d/2,len,24);
+    geo.__shared = true;
+    const side = new THREE.MeshStandardMaterial({color:sideColor, metalness:0.35, roughness:0.4});
+    side.__shared = true;
+    const posMat = new THREE.MeshStandardMaterial({color:0xd9c9a8, metalness:0.7, roughness:0.3});
+    posMat.__shared = true;
+    const negMat = new THREE.MeshStandardMaterial({color:0x6b7480, metalness:0.6, roughness:0.35});
+    negMat.__shared = true;
+    const mesh = new THREE.Mesh(geo, [side, posMat, negMat]);
+    mesh.position.set(pos.x,pos.y,pos.z);
+    REQ.group.add(mesh);
+    registerMat('cell', side, new THREE.Color(sideColor));
+    registerMat('cell', posMat, new THREE.Color(0xd9c9a8));
+    registerMat('cell', negMat, new THREE.Color(0x6b7480));
+    track(cat, mesh, mesh.position, o.buildAt);
+    return mesh;
+  }
+
+  function addTube(cat, points, radius, color, pos, o){
+    o = o||{};
+    const curve = new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(p[0],p[1],p[2])));
+    const geo = new THREE.TubeGeometry(curve, 24, radius, 10, false);
+    geo.__shared = true;
+    const mat = new THREE.MeshStandardMaterial({color, metalness:0.1, roughness:0.6});
+    mat.__shared = true;
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set(pos.x,pos.y,pos.z);
+    REQ.group.add(mesh);
+    registerMat(cat, mat, new THREE.Color(color));
+    track(cat, mesh, mesh.position, o.buildAt);
+    return mesh;
+  }
+
+  const gcol = g => groupColor(g, r.S);
+
+  /* --- housing --- */
+  // bottom plate
+  addBox('bottom', L, r.wallBottom, W, 0x3a4048, 1, {x:L/2, y:r.wallBottom/2, z:W/2}, {metalness:0.4, roughness:0.6, buildAt:0.0});
+  // side walls
+  addBox('wall', L, H, r.wallT, 0x5b8def, 0.14, {x:L/2, y:H/2, z:r.wallT/2}, {metalness:0.1, roughness:0.4, buildAt:0.05}); // front
+  addBox('wall', L, H, r.wallT, 0x5b8def, 0.14, {x:L/2, y:H/2, z:W-r.wallT/2}, {metalness:0.1, roughness:0.4, buildAt:0.05}); // back
+  addBox('wall', r.wallT, H, W, 0x5b8def, 0.14, {x:r.wallT/2, y:H/2, z:W/2}, {metalness:0.1, roughness:0.4, buildAt:0.05}); // left
+  addBox('wall', r.wallT, H, W, 0x5b8def, 0.14, {x:L-r.wallT/2, y:H/2, z:W/2}, {metalness:0.1, roughness:0.4, buildAt:0.05}); // right
+  // top cover
+  addBox('wall', L, r.wallTop, W, 0x5b8def, 0.18, {x:L/2, y:H-r.wallTop/2, z:W/2}, {metalness:0.1, roughness:0.4, buildAt:0.92});
+
+  /* --- thermal --- */
+  if(r.thermalT>0){
+    addBox('thermal', block.w, r.thermalT, block.d, 0x38b2ac, 0.9, {x:cellOx+block.w/2, y:r.wallBottom+r.g+r.thermalT/2, z:cellOz+block.d/2}, {metalness:0.6, roughness:0.4, buildAt:0.2});
+  }
+
+  /* --- supports --- */
+  addBox('support', block.w, r.supportT, block.d, 0x8a94a0, 0.55, {x:cellOx+block.w/2, y:cellOy-r.supportT/2, z:cellOz+block.d/2}, {metalness:0.1, roughness:0.6, buildAt:0.15});
+  addBox('support', block.w, r.supportT, block.d, 0x8a94a0, 0.55, {x:cellOx+block.w/2, y:topBase-r.supportT/2, z:cellOz+block.d/2}, {metalness:0.1, roughness:0.6, buildAt:0.15});
+
+  /* --- isolation (thin translucent shell around cell block) --- */
+  addBox('support', block.w+1, block.h+1, block.d+1, 0x6b7480, 0.10, {x:cellOx+block.w/2, y:cellOy+block.h/2, z:cellOz+block.d/2}, {metalness:0, roughness:0.9, buildAt:0.28});
+
+  /* --- cells --- */
+  r.layout.positions.forEach(p=>{
+    const g = Math.floor(p.idx / r.P);
+    const cx = cellOx + p.x, cy = cellOy + p.y, cz = cellOz + p.z;
+    const buildAt = 0.32 + (p.idx/r.N)*0.15;
+    if(cell.form==='cyl'){
+      const mesh = addCyl('cell', cell.d, cell.l, gcol(g), {x:cx, y:cy, z:cz}, {buildAt});
+      if(r.opts.orientation==='horizontal') mesh.rotation.z = Math.PI/2;
+    } else {
+      const extX = r.opts.orientation==='vertical' ? cell.t : cell.w;
+      const extY = r.opts.orientation==='vertical' ? cell.h : cell.t;
+      const extZ = r.opts.orientation==='vertical' ? cell.w : cell.h;
+      const geo = new THREE.BoxGeometry(extX, extY, extZ);
+      geo.__shared = true;
+      const mat = new THREE.MeshStandardMaterial({color:gcol(g), metalness:0.3, roughness:0.45});
+      mat.__shared = true;
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.position.set(cx, cy, cz);
+      REQ.group.add(mesh);
+      registerMat('cell', mat, new THREE.Color(gcol(g)));
+      track('cell', mesh, mesh.position, buildAt);
+      // terminal tab
+      const tab = new THREE.BoxGeometry(extX*0.4, 1.5, 4);
+      tab.__shared = true;
+      const tabMat = new THREE.MeshStandardMaterial({color:0xd9c9a8, metalness:0.7, roughness:0.3});
+      tabMat.__shared = true;
+      const tabMesh = new THREE.Mesh(tab, tabMat);
+      tabMesh.position.set(cx, cy+extY/2, cz);
+      REQ.group.add(tabMesh);
+      registerMat('cell', tabMat, new THREE.Color(0xd9c9a8));
+      track('cell', tabMesh, tabMesh.position, buildAt);
+    }
+  });
+
+  /* --- busbars --- */
+  for(let g=0; g<r.S; g++){
+    const cells = r.layout.positions.filter(p=>Math.floor(p.idx/r.P)===g);
+    if(!cells.length) continue;
+    let xmin=Infinity,xmax=-Infinity,zmin=Infinity,zmax=-Infinity;
+    cells.forEach(p=>{
+      xmin=Math.min(xmin, p.x); xmax=Math.max(xmax, p.x);
+      zmin=Math.min(zmin, p.z); zmax=Math.max(zmax, p.z);
+    });
+    const bw = (xmax-xmin) + (cell.form==='cyl'? cell.d : r.opts.orientation==='vertical'?cell.t:cell.w);
+    const bd = (zmax-zmin) + (cell.form==='cyl'? cell.d : r.opts.orientation==='vertical'?cell.w:cell.t);
+    const bcx = cellOx + (xmin+xmax)/2;
+    const bcz = cellOz + (zmin+zmax)/2;
+    addBox('busbar', bw, r.comps.busbarT, bd, 0xc9835a, 1, {x:bcx, y:topBase + r.comps.busbarT/2, z:bcz}, {metalness:0.7, roughness:0.35, buildAt:0.55});
+  }
+
+  /* --- BMS --- */
+  const bms = r.comps.bms;
+  const bmsPos = { x: cellOx + block.w - bms.dx/2, y: topBase + bms.dy/2, z: cellOz + block.d - bms.dz/2 };
+  addBox('bms', bms.dx, bms.dy, bms.dz, 0x2f9e6f, 1, bmsPos, {metalness:0.2, roughness:0.5, buildAt:0.65});
+  // small components on top of BMS
+  for(let i=0;i<4;i++){
+    const cw = bms.dx*0.16, ch = 3, cd = bms.dz*0.3;
+    addBox('bms', cw, ch, cd, 0x1d2b25, 1, {x:bmsPos.x - bms.dx*0.3 + i*bms.dx*0.2, y:bmsPos.y + bms.dy/2 + ch/2, z:bmsPos.z}, {metalness:0.2, roughness:0.5, buildAt:0.66});
+  }
+
+  /* --- connectors --- */
+  const main = r.comps.mainConn;
+  const mainPos = { x: cellOx + block.w*0.5 - main.dx/2, y: cellOy + block.h*0.4, z: r.wallT + main.dz/2 };
+  addBox('main', main.dx, main.dy, main.dz, 0x2a2f36, 1, mainPos, {metalness:0.4, roughness:0.4, buildAt:0.8});
+  addBox('main', main.dx*0.5, main.dy*0.5, main.dz*0.4, 0xd9c9a8, 1, {x:mainPos.x, y:mainPos.y, z:mainPos.z - main.dz/2}, {metalness:0.7, roughness:0.3, buildAt:0.81});
+  const charge = r.comps.chargeConn;
+  const chargePos = { x: mainPos.x + main.dx, y: mainPos.y, z: r.wallT + charge.dz/2 };
+  addBox('charge', charge.dx, charge.dy, charge.dz, 0x3a2f2a, 1, chargePos, {metalness:0.4, roughness:0.4, buildAt:0.85});
+
+  /* --- wiring --- */
+  const wiringR = r.comps.wiringR;
+  const topY = topBase + r.topZone;
+  const mainPts = [
+    [cellOx+block.w*0.2, topY, cellOz+block.d*0.5],
+    [cellOx+block.w*0.2, topY, mainPos.z],
+    [mainPos.x, topY*0.7, mainPos.z],
+    [mainPos.x, mainPos.y, mainPos.z],
+  ];
+  addTube('wiring', mainPts, wiringR, 0xe5484d, {x:0,y:0,z:0}, {buildAt:0.72});
+  const negPts = [
+    [cellOx+block.w*0.2, topY, cellOz+block.d*0.5],
+    [cellOx+block.w*0.15, topY, chargePos.z],
+    [chargePos.x, topY*0.7, chargePos.z],
+    [chargePos.x, chargePos.y, chargePos.z],
+  ];
+  addTube('wiring', negPts, wiringR, 0x20242a, {x:0,y:0,z:0}, {buildAt:0.74});
+  // BMS sense ribbon
+  const ribbonPts = [
+    [bmsPos.x, topBase + bms.dy, bmsPos.z],
+    [cellOx+block.w*0.5, topY, cellOz+block.d*0.5],
+  ];
+  addTube('wiring', ribbonPts, Math.max(1, wiringR*0.6), 0x9aa4b0, {x:0,y:0,z:0}, {buildAt:0.76});
+
+  // ground plane
+  if(!REQ.ground){
+    const ggeo = new THREE.PlaneGeometry(1,1);
+    ggeo.__shared = true;
+    const gmat = new THREE.MeshStandardMaterial({color:0x11161b, roughness:0.95, metalness:0});
+    gmat.__shared = true;
+    REQ.ground = new THREE.Mesh(ggeo, gmat);
+    REQ.ground.rotation.x = -Math.PI/2;
+    scene.add(REQ.ground);
+  }
+  const gsize = Math.max(L,W)*3 + 60;
+  REQ.ground.scale.set(gsize, gsize, 1);
+  REQ.ground.position.set(0, -H/2 - 1, 0);
+  REQ.ground.visible = currentMode==='req';
+
+  // center the whole group
+  REQ.group.position.set(-L/2, -H/2, -W/2);
+
+  if(opts.reframe){
+    const tgt = new THREE.Vector3(0,0,0);
+    const dir = new THREE.Vector3(0.6,0.5,0.7).normalize();
+    flyTo(dir.clone().multiplyScalar(REQ.viewDist).add(tgt), tgt, 700);
+  }
+}
+
+function applyReqTransforms(){
+  const d = REQ.dynamic;
+  if(!d.length) return;
+  const explode = REQ.explodeCur;
+  const b = REQ.build;
+  const dist = REQ.explodeDist;
+  for(const e of d){
+    const m = e.mesh;
+    if(e.dir){
+      m.position.set(e.home.x + e.dir[0]*e.mag*dist*explode,
+                     e.home.y + e.dir[1]*e.mag*dist*explode,
+                     e.home.z + e.dir[2]*e.mag*dist*explode);
+    } else {
+      m.position.copy(e.home);
+    }
+    const t = Math.max(0, Math.min(1, (b - e.buildAt)/0.12));
+    const s = easeInOutCubic(t);
+    m.scale.setScalar(Math.max(0.0001, s));
+    m.visible = s > 0.001;
+  }
+}
+
+/* ---------- selection / highlight ---------- */
+function selectComponent(cat){
+  REQ.selectedCat = cat;
+  const panel = document.getElementById('sel-panel');
+  document.querySelectorAll('#req-legend .lchip').forEach(el=>{
+    el.classList.toggle('active', el.dataset.cat===cat);
+  });
+  if(!cat){
+    panel.style.display='none';
+    restoreAllColors();
+    return;
+  }
+  restoreAllColors();
+  for(const c in REQ.matsByCat){
+    if(c===cat) continue;
+    REQ.matsByCat[c].forEach(entry=>{ entry.mat.color.copy(entry.baseColor).multiplyScalar(0.25); });
+  }
+  const r = REQ.result;
+  if(r){
+    const info = catInfo(cat, r);
+    document.getElementById('sel-name').textContent = info.name;
+    document.getElementById('sel-dims').textContent = info.dims;
+    document.getElementById('sel-mass').textContent = info.mass;
+    document.getElementById('sel-space').textContent = info.space;
+    panel.style.display='';
+  }
+}
+function restoreAllColors(){
+  for(const c in REQ.matsByCat){
+    REQ.matsByCat[c].forEach(entry=>{ entry.mat.color.copy(entry.baseColor); });
+  }
+}
+
+const CAT_INFO = {
+  cell:'Cellule', bms:'BMS', main:'Main Connector', charge:'Charging Connector', wiring:'Wiring', busbar:'Busbar', support:'Support / Isolation', wall:'Wall / Cover', bottom:'Bottom Plate', thermal:'Thermal System',
+};
+function catInfo(cat, r){
+  const bd = r.breakdown;
+  const mp = r.massParts;
+  const c = r.cell;
+  switch(cat){
+    case 'cell': return {name:'Cellule', dims: c.form==='cyl' ? `Ø${c.d} × ${c.l} mm` : `${c.w}×${c.t}×${c.h} mm`, mass: fmt(c.mass,0)+' g', space: fmt(bd.cells/1000,1)+' cm³'};
+    case 'bms': return {name:'BMS', dims:`${fmt(r.comps.bms.dx,0)}×${fmt(r.comps.bms.dy,0)}×${fmt(r.comps.bms.dz,0)} mm`, mass: fmt(r.comps.bms.mass,0)+' g', space: fmt(bd.bms/1000,2)+' cm³'};
+    case 'main': return {name:'Main Connector', dims:`${fmt(r.comps.mainConn.dx,0)}×${fmt(r.comps.mainConn.dy,0)}×${fmt(r.comps.mainConn.dz,0)} mm`, mass: fmt(r.comps.mainConn.mass,0)+' g', space: fmt(bd.connectors/1000,2)+' cm³'};
+    case 'charge': return {name:'Charging Connector', dims:`${fmt(r.comps.chargeConn.dx,0)}×${fmt(r.comps.chargeConn.dy,0)}×${fmt(r.comps.chargeConn.dz,0)} mm`, mass: fmt(r.comps.chargeConn.mass,0)+' g', space: fmt(bd.connectors/1000,2)+' cm³'};
+    case 'wiring': return {name:'Wiring', dims:`Ø${fmt(r.comps.wiringR*2,1)} mm`, mass: fmt(mp.wiring,0)+' g', space: fmt(bd.wiring/1000,2)+' cm³'};
+    case 'busbar': return {name:'Busbar', dims:`${fmt(r.comps.busbarT,1)} mm`, mass: fmt(mp.busbars,0)+' g', space: fmt(bd.busbars/1000,2)+' cm³'};
+    case 'support': return {name:'Supports / Isolation', dims:`${fmt(r.supportT,0)} mm`, mass: fmt(mp.supports,0)+' g', space: fmt(bd.supports/1000,2)+' cm³'};
+    case 'wall': return {name:'Parois / Capot', dims:`${fmt(r.wallT,1)} mm`, mass: fmt(mp.housing,0)+' g', space: fmt(bd.housing/1000,1)+' cm³'};
+    case 'bottom': return {name:'Plaque inférieure', dims:`${fmt(r.wallBottom,0)} mm`, mass: fmt(mp.housing,0)+' g', space: fmt(bd.housing/1000,1)+' cm³'};
+    case 'thermal': return {name:'Thermal System', dims:`${fmt(r.thermalT,0)} mm`, mass: fmt(mp.thermal,0)+' g', space: fmt(bd.thermal/1000,2)+' cm³'};
+    default: return {name:'—', dims:'—', mass:'—', space:'—'};
+  }
+}
+
+function onPick(e){
+  if(currentMode!=='req') return;
+  const rect = renderer.domElement.getBoundingClientRect();
+  const ndc = new THREE.Vector2(((e.clientX-rect.left)/rect.width)*2-1, -((e.clientY-rect.top)/rect.height)*2+1);
+  raycaster.setFromCamera(ndc, camera);
+  const hits = raycaster.intersectObjects(REQ.group.children, true);
+  if(hits.length){
+    const obj = hits[0].object;
+    selectComponent(obj.userData.cat || null);
+  } else {
+    selectComponent(null);
+  }
+}
+renderer.domElement.addEventListener('pointerdown', onPick);
+
+/* ---------- legend ---------- */
+const LEGEND = [
+  ['cell','Cell','#c9835a'],
+  ['bms','BMS','#2f9e6f'],
+  ['main','Main Connector','#e0a52c'],
+  ['charge','Charging Connector','#c78a2f'],
+  ['wiring','Wiring','#e5484d'],
+  ['busbar','Busbars','#d08a5a'],
+  ['support','Support','#8a94a0'],
+  ['wall','Wall','#5b8def'],
+  ['bottom','Bottom Plate','#3a4048'],
+  ['thermal','Thermal System','#38b2ac'],
+];
+function buildLegend(){
+  const host = document.getElementById('req-legend');
+  host.innerHTML = LEGEND.map(([cat,label,color])=>{
+    return `<div class="lchip" data-cat="${cat}"><span class="sw" style="background:${color}"></span>${label}</div>`;
+  }).join('');
+}
+document.getElementById('req-legend').addEventListener('click', e=>{
+  const chip = e.target.closest('.lchip');
+  if(!chip) return;
+  selectComponent(chip.dataset.cat===REQ.selectedCat ? null : chip.dataset.cat);
+});
+
+/* ---------- bottom toolbar ---------- */
+document.getElementById('btn-exploded').addEventListener('click', function(){
+  REQ.exploded = !REQ.exploded;
+  REQ.explodeTarget = REQ.exploded ? 1 : 0;
+  this.classList.toggle('active', REQ.exploded);
+});
+document.getElementById('btn-breakdown').addEventListener('click', function(){
+  REQ.breakdown = !REQ.breakdown;
+  document.getElementById('breakdown-panel').style.display = REQ.breakdown ? '' : 'none';
+  this.classList.toggle('active', REQ.breakdown);
+});
+document.getElementById('btn-play-anim').addEventListener('click', ()=>{
+  REQ.build = 0;
+  REQ.buildTarget = 1;
+});
+document.getElementById('btn-skip-anim').addEventListener('click', ()=>{
+  REQ.build = 1;
+  REQ.buildTarget = 1;
+});
+document.querySelectorAll('#req-bottom [data-view]').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const v = btn.dataset.view;
+    const tgt = new THREE.Vector3(0,0,0);
+    const d = REQ.viewDist;
+    let dir;
+    if(v==='top') dir = new THREE.Vector3(0,1,0.001);
+    else if(v==='front') dir = new THREE.Vector3(0,0.001,1);
+    else if(v==='side') dir = new THREE.Vector3(1,0.001,0);
+    else dir = new THREE.Vector3(0.6,0.5,0.7); // iso / reset
+    flyTo(dir.normalize().multiplyScalar(d).add(tgt), tgt, 650);
+  });
+});
+
+/* ---------- mode switch ---------- */
+function setMode(mode){
+  currentMode = mode;
+  const designer = mode==='designer';
+  document.getElementById('mode-designer').classList.toggle('active', designer);
+  document.getElementById('mode-req').classList.toggle('active', !designer);
+
+  document.getElementById('aside-designer-left').style.display = designer ? '' : 'none';
+  document.getElementById('aside-designer-right').style.display = designer ? '' : 'none';
+  document.getElementById('aside-req-left').style.display = designer ? 'none' : '';
+  document.getElementById('aside-req-right').style.display = designer ? 'none' : '';
+  document.getElementById('log').style.display = designer ? '' : 'none';
+  document.getElementById('req-bottom').style.display = designer ? 'none' : 'flex';
+  document.getElementById('breakdown-panel').style.display = (designer||!REQ.breakdown) ? 'none' : '';
+  document.getElementById('sel-panel').style.display='none';
+
+  document.getElementById('tri-count').style.display = designer ? '' : 'none';
+  document.getElementById('header-sub').textContent = designer ? 'V1 — placement 3D réel' : 'V2 — dimensionnement inverse';
+
+  S.cellsGroup.visible = designer;
+  if(S.hullMesh) S.hullMesh.visible = designer;
+  REQ.group.visible = !designer;
+  if(REQ.ground) REQ.ground.visible = !designer;
+
+  if(designer){
+    setStatus(S.hullMesh ? 'Mode Battery Designer — reprenez le placement 3D.' : 'Importez un .stl ou chargez la forme d\'exemple pour commencer.');
+  } else {
+    recompute();
+  }
+}
+document.getElementById('mode-designer').addEventListener('click', ()=>setMode('designer'));
+document.getElementById('mode-req').addEventListener('click', ()=>setMode('req'));
+
+/* ---------- req input listeners ---------- */
+['r-vnom','r-vmin','r-vmax','r-pcont','r-ppeak','r-icont','r-ipeak','r-energ','r-cap','r-margin',
+ 'r-d','r-l','r-w','r-t','r-h','r-cap-cell','r-vnom-cell','r-vmin-cell','r-vmax-cell','r-icont-cell','r-ipeak-cell','r-icharge-cell','r-mass-cell','r-clear-cell',
+ 'r-s','r-p'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', scheduleRecompute);
+});
+document.getElementById('r-override').addEventListener('change', scheduleRecompute);
+document.getElementById('r-thermal').addEventListener('change', scheduleRecompute);
+
+/* ---------- render loop (extended) ---------- */
+function animate(now){
+  requestAnimationFrame(animate);
+  const t = now || performance.now();
+  stepAnims(t);
+  updateCameraTween();
+  REQ.explodeCur += (REQ.explodeTarget - REQ.explodeCur)*0.14;
+  REQ.build += (REQ.buildTarget - REQ.build)*0.12;
+  applyReqTransforms();
+  controls.update();
+  renderer.render(scene, camera);
+}
+requestAnimationFrame(animate);
+
+/* ================================================================
+   AI REQUIREMENT ASSISTANT
+   ================================================================ */
+
+function aiNum(s){
+  if(s==null) return null;
+  s = String(s).replace(/\u00a0/g,' ').replace(/\s/g,'').replace(',','.');
+  if(!/^-?\d+(\.\d+)?$/.test(s)) return null;
+  const v = parseFloat(s);
+  return Number.isFinite(v) ? v : null;
+}
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+const AI = { currentFields: [], currentIntent: null };
+
+/* Curated reference library — real, sourced specs. Live web search needs a backend/API key. */
+const REFERENCE_DB = [
+  { id:'dji-tb65', name:'DJI TB65 (Matrice 350 / 300)', aliases:['tb65','matrice 350','m350','m300','matrice 300','matrice 350 rtk'],
+    fields:[
+      {key:'vnom', label:'Voltage (nominal)', value:44.76, unit:'V', source:'DJI Enterprise', url:'https://enterprise.dji.com/mobile/matrice-350-rtk/specs', confidence:'High'},
+      {key:'capacity', label:'Capacity', value:5.88, unit:'Ah', source:'DJI Enterprise', url:'https://enterprise.dji.com/mobile/matrice-350-rtk/specs', confidence:'High', note:'5880 mAh'},
+      {key:'energy', label:'Energy', value:263.2, unit:'Wh', source:'DJI Enterprise', url:'https://enterprise.dji.com/mobile/matrice-350-rtk/specs', confidence:'High'},
+      {key:'mass', label:'Mass', value:1.35, unit:'kg', source:'DJI Enterprise', url:'https://enterprise.dji.com/mobile/matrice-350-rtk/specs', confidence:'High'},
+      {key:'S', label:'Series (S)', value:12, unit:'', source:'Calculated', url:'', confidence:'Medium', note:'44.76 V ÷ 3.73 V/cell'},
+      {key:'cellType', label:'Cell type', value:'Li-ion', source:'DJI Enterprise', url:'https://enterprise.dji.com/mobile/matrice-350-rtk/specs', confidence:'High'},
+    ]},
+  { id:'dji-tb50', name:'DJI TB50 (Inspire 2 / Ronin 2 / Matrice 200)', aliases:['tb50','inspire 2','ronin 2','matrice 200'],
+    fields:[
+      {key:'vnom', label:'Voltage (nominal)', value:22.8, unit:'V', source:'DJI Store', url:'https://store.dji.com/product/ronin-2-tb50-intelligent-battery', confidence:'High'},
+      {key:'capacity', label:'Capacity', value:4.28, unit:'Ah', source:'DJI Store', url:'https://store.dji.com/product/ronin-2-tb50-intelligent-battery', confidence:'High', note:'4280 mAh'},
+      {key:'energy', label:'Energy', value:97.58, unit:'Wh', source:'DJI Store', url:'https://store.dji.com/product/ronin-2-tb50-intelligent-battery', confidence:'High'},
+      {key:'mass', label:'Mass', value:0.515, unit:'kg', source:'DJI Store', url:'https://store.dji.com/product/ronin-2-tb50-intelligent-battery', confidence:'High', note:'515 g'},
+      {key:'S', label:'Series (S)', value:6, unit:'', source:'DJI Store', url:'https://store.dji.com/product/ronin-2-tb50-intelligent-battery', confidence:'High', note:'LiPo 6S'},
+      {key:'cellType', label:'Cell type', value:'LiPo (pouch)', source:'DJI Store', url:'https://store.dji.com/product/ronin-2-tb50-intelligent-battery', confidence:'High'},
+    ]},
+  { id:'tattu-12s-16000', name:'Tattu 16000mAh 12S 25C (HV Smart LiPo)', aliases:['tattu 12s 16000','tattu 16000','12s 16000mah','16000mah 12s','tattu r-line 12s 16000','12s 16000'],
+    fields:[
+      {key:'vnom', label:'Voltage (nominal)', value:45.6, unit:'V', source:'GensTattu', url:'https://genstattu.com/tattu-Pro-25c-16000mah-12s1p-as150-smart-lipo-battery.html', confidence:'High', note:'HV (haute tension)'},
+      {key:'capacity', label:'Capacity', value:16, unit:'Ah', source:'GensTattu', url:'https://genstattu.com/tattu-Pro-25c-16000mah-12s1p-as150-smart-lipo-battery.html', confidence:'High', note:'16000 mAh'},
+      {key:'crate', label:'C-rate', value:25, unit:'C', source:'GensTattu', url:'https://genstattu.com/tattu-Pro-25c-16000mah-12s1p-as150-smart-lipo-battery.html', confidence:'High'},
+      {key:'S', label:'Series (S)', value:12, unit:'', source:'GensTattu', url:'https://genstattu.com/tattu-Pro-25c-16000mah-12s1p-as150-smart-lipo-battery.html', confidence:'High'},
+      {key:'P', label:'Parallel (P)', value:1, unit:'', source:'GensTattu', url:'https://genstattu.com/tattu-Pro-25c-16000mah-12s1p-as150-smart-lipo-battery.html', confidence:'High', note:'12S1P'},
+      {key:'mass', label:'Mass', value:4.65, unit:'kg', source:'GensTattu', url:'https://genstattu.com/tattu-Pro-25c-16000mah-12s1p-as150-smart-lipo-battery.html', confidence:'High', note:'4650 g'},
+      {key:'dims', label:'Dimensions (L×W×H)', value:'224 × 163 × 90', unit:'mm', source:'GensTattu', url:'https://genstattu.com/tattu-Pro-25c-16000mah-12s1p-as150-smart-lipo-battery.html', confidence:'High'},
+      {key:'ipeak', label:'Current (peak)', value:400, unit:'A', source:'Calculated', url:'', confidence:'High', note:'16 Ah × 25C'},
+      {key:'energy', label:'Energy', value:729.6, unit:'Wh', source:'Calculated', url:'', confidence:'High', note:'45.6 V × 16 Ah'},
+      {key:'cellType', label:'Cell type', value:'LiPo HV (pouch)', source:'GensTattu', url:'https://genstattu.com/tattu-Pro-25c-16000mah-12s1p-as150-smart-lipo-battery.html', confidence:'High'},
+      {key:'connMain', label:'Main connector', value:'AS150U-F', source:'GensTattu', url:'https://genstattu.com/tattu-Pro-25c-16000mah-12s1p-as150-smart-lipo-battery.html', confidence:'High'},
+    ]},
+  { id:'tattu-rline-6s-1600', name:'Tattu R-Line 6.0 1600mAh 6S 160C', aliases:['tattu r-line','r-line 6.0','1600mah 6s','6s 160c','r-line'],
+    fields:[
+      {key:'vnom', label:'Voltage (nominal)', value:22.2, unit:'V', source:'GensTattu', url:'https://genstattu.com/tattu-r-line-version-6-0-1600mah-160c-6s-22-2v-sq-lipo-battery-pack-with-xt60-plug/', confidence:'High'},
+      {key:'capacity', label:'Capacity', value:1.6, unit:'Ah', source:'GensTattu', url:'https://genstattu.com/tattu-r-line-version-6-0-1600mah-160c-6s-22-2v-sq-lipo-battery-pack-with-xt60-plug/', confidence:'High', note:'1600 mAh'},
+      {key:'crate', label:'C-rate', value:160, unit:'C', source:'GensTattu', url:'https://genstattu.com/tattu-r-line-version-6-0-1600mah-160c-6s-22-2v-sq-lipo-battery-pack-with-xt60-plug/', confidence:'High'},
+      {key:'S', label:'Series (S)', value:6, unit:'', source:'GensTattu', url:'https://genstattu.com/tattu-r-line-version-6-0-1600mah-160c-6s-22-2v-sq-lipo-battery-pack-with-xt60-plug/', confidence:'High'},
+      {key:'mass', label:'Mass', value:0.24, unit:'kg', source:'GensTattu', url:'https://genstattu.com/tattu-r-line-version-6-0-1600mah-160c-6s-22-2v-sq-lipo-battery-pack-with-xt60-plug/', confidence:'High', note:'240 g'},
+      {key:'dims', label:'Dimensions (L×W×H)', value:'70 × 42 × 41', unit:'mm', source:'GensTattu', url:'https://genstattu.com/tattu-r-line-version-6-0-1600mah-160c-6s-22-2v-sq-lipo-battery-pack-with-xt60-plug/', confidence:'High'},
+      {key:'ipeak', label:'Current (peak)', value:256, unit:'A', source:'Calculated', url:'', confidence:'High', note:'1.6 Ah × 160C'},
+      {key:'energy', label:'Energy', value:35.5, unit:'Wh', source:'Calculated', url:'', confidence:'High', note:'22.2 V × 1.6 Ah'},
+      {key:'cellType', label:'Cell type', value:'LiPo (pouch)', source:'GensTattu', url:'https://genstattu.com/tattu-r-line-version-6-0-1600mah-160c-6s-22-2v-sq-lipo-battery-pack-with-xt60-plug/', confidence:'High'},
+      {key:'connMain', label:'Main connector', value:'XT60', source:'GensTattu', url:'https://genstattu.com/tattu-r-line-version-6-0-1600mah-160c-6s-22-2v-sq-lipo-battery-pack-with-xt60-plug/', confidence:'High'},
+    ]},
+  { id:'samsung-50s', name:'Samsung INR21700-50S (cellule)', aliases:['samsung 50s','inr21700-50s','21700 50s','50s','samsung 21700'],
+    fields:[
+      {key:'cellType', label:'Cell type', value:'21700', source:'Samsung SDI datasheet', url:'https://www.18650batterystore.com/products/samsung-50s-21700-5000mah-25a-battery', confidence:'High'},
+      {key:'cellCap', label:'Cell capacity', value:5.0, unit:'Ah', source:'Samsung SDI datasheet', url:'https://www.18650batterystore.com/products/samsung-50s-21700-5000mah-25a-battery', confidence:'High', note:'5000 mAh'},
+      {key:'cellVnom', label:'Cell V nominal', value:3.6, unit:'V', source:'Samsung SDI datasheet', url:'https://www.18650batterystore.com/products/samsung-50s-21700-5000mah-25a-battery', confidence:'High'},
+      {key:'cellVmax', label:'Cell V max', value:4.2, unit:'V', source:'Samsung SDI datasheet', url:'https://www.18650batterystore.com/products/samsung-50s-21700-5000mah-25a-battery', confidence:'High'},
+      {key:'cellIcont', label:'Cell I continuous', value:25, unit:'A', source:'Samsung SDI datasheet', url:'https://www.18650batterystore.com/products/samsung-50s-21700-5000mah-25a-battery', confidence:'High'},
+      {key:'cellIpeak', label:'Cell I peak', value:45, unit:'A', source:'Samsung SDI datasheet', url:'https://www.18650batterystore.com/products/samsung-50s-21700-5000mah-25a-battery', confidence:'Medium', note:'avec coupure 80 °C'},
+    ]},
+];
+
+function extractFromText(raw){
+  let text = (raw||'').replace(/\u00a0/g,' ')
+    .replace(/(\d{2,}),(\d{3})(?!\d)/g,'$1$2')   // thousands "16,000" -> "16000"
+    .replace(/(\d)\s+(\d{3})\b/g,'$1$2');         // space thousands "16 000" -> "16000"
+  const fields = [];
+  const SRC = 'Extracted from text';
+  function add(key,label,value,unit,confidence,note){ if(value==null||value===''||(typeof value==='number'&&!isFinite(value))) return; fields.push({key,label,value,unit,source:SRC,url:'',confidence,note}); }
+  function val(re){ const m = text.match(re); return m ? aiNum(m[1]) : null; }
+
+  const sp = text.match(/(\d{1,3})\s*[sS]\s*(\d{1,3})\s*[pP]/);
+  if(sp){ add('S','Series (S)',aiNum(sp[1]),'','High'); add('P','Parallel (P)',aiNum(sp[2]),'','High'); }
+  else { const s = text.match(/(\d{1,3})\s*[sS]\b/); if(s) add('S','Series (S)',aiNum(s[1]),'','High'); }
+  const cc = text.match(/(\d{1,4})\s*(?:cellules?|cells?)\b/i);
+  if(cc) add('N','Cell count',aiNum(cc[1]),'','High');
+
+  let vnom = val(/(?:nominal(?:e)?|nom\.?|tension\s*nominale?)\s*(?:voltage|tension)?\s*[:=]?\s*(\d+(?:[.,]\d+)?)\s*V/i);
+  let vmax = val(/(?:max(?:imum|imale)?|charge|plein)\s*(?:voltage|tension)?\s*[:=]?\s*(\d+(?:[.,]\d+)?)\s*V/i);
+  let vmin = val(/(?:min(?:imum|imale)?|cut[- ]?off|d[ée]charge)\s*(?:voltage|tension)?\s*[:=]?\s*(\d+(?:[.,]\d+)?)\s*V/i);
+  const allV = [...text.matchAll(/(\d+(?:[.,]\d+)?)\s*V\b/g)].map(m=>aiNum(m[1])).filter(v=>v!=null);
+  if(vnom==null && allV.length) vnom = allV[0];
+  add('vnom','Voltage (nominal)',vnom,'V','High');
+  add('vmax','Voltage (max)',vmax,'V','High');
+  add('vmin','Voltage (min)',vmin,'V','High');
+
+  let capAh = null, capNote = null;
+  const mah = text.match(/(\d+(?:[.,]\d+)?)\s*(?:mAh|mah)\b/);
+  if(mah){ capAh = aiNum(mah[1])/1000; capNote = mah[1]+' mAh'; }
+  else { const ah = text.match(/(\d+(?:[.,]\d+)?)\s*[Aa][Hh]\b/); if(ah){ capAh = aiNum(ah[1]); capNote = ah[1]+' Ah'; } }
+  add('capacity','Capacity',capAh,'Ah','High',capNote);
+
+  let eWh = null;
+  const kwh = text.match(/(\d+(?:[.,]\d+)?)\s*(?:kWh|kwh)\b/); if(kwh) eWh = aiNum(kwh[1])*1000;
+  if(eWh==null){ const wh = text.match(/(\d+(?:[.,]\d+)?)\s*(?:Wh|wh|Whr|W·h)\b/); if(wh) eWh = aiNum(wh[1]); }
+  add('energy','Energy',eWh,'Wh','High');
+
+  let icont = val(/(?:continu(?:ous|e)?|cont\.?|nominal|discharge|d[ée]charge)\s*(?:current|courant)?\s*[:=]?\s*(\d+(?:[.,]\d+)?)\s*(?:A|amps?|amp[èe]res?)\b/i);
+  let ipeak = val(/(?:peak|max(?:imum|imale)?|cr[êe]te|pointe|burst)\s*(?:current|courant)?\s*[:=]?\s*(\d+(?:[.,]\d+)?)\s*(?:A|amps?|amp[èe]res?)\b/i);
+  const allA = [...text.matchAll(/(\d+(?:[.,]\d+)?)\s*A\b/g)].map(m=>aiNum(m[1])).filter(v=>v!=null);
+  if(icont==null && ipeak==null && allA.length) icont = allA[0];
+  add('icont','Current (continuous)',icont,'A','High');
+  add('ipeak','Current (peak)',ipeak,'A','High');
+
+  const crateM = text.match(/(\d+(?:[.,]\d+)?)\s*C\b/);
+  add('crate','C-rate',crateM?aiNum(crateM[1]):null,'C','High');
+
+  let pW = null;
+  const kw = text.match(/(\d+(?:[.,]\d+)?)\s*(?:kW|kw)\b/); if(kw) pW = aiNum(kw[1])*1000;
+  if(pW==null){ const w = text.match(/(\d+(?:[.,]\d+)?)\s*(?:W|watts?)\b(?!h)/i); if(w) pW = aiNum(w[1]); }
+  add('pcont','Power (continuous)',pW,'W','High');
+
+  const dims = text.match(/(\d+(?:[.,]\d+)?)\s*(?:x|×|X|\*)\s*(\d+(?:[.,]\d+)?)\s*(?:x|×|X|\*)\s*(\d+(?:[.,]\d+)?)\s*(mm|cm)\b/i);
+  if(dims){
+    const m2 = dims[4].toLowerCase()==='cm' ? 10 : 1;
+    add('dims','Dimensions (L×W×H)',`${aiNum(dims[1])*m2} × ${aiNum(dims[2])*m2} × ${aiNum(dims[3])*m2}`,'mm','High');
+  }
+
+  let massKg = null;
+  const kgm = text.match(/(\d+(?:[.,]\d+)?)\s*kg\b/i); if(kgm) massKg = aiNum(kgm[1]);
+  if(massKg==null){ const gm = text.match(/(\d+(?:[.,]\d+)?)\s*(?:g|grams?|grammes?)\b/i); if(gm) massKg = aiNum(gm[1])/1000; }
+  add('mass','Mass',massKg,'kg','High');
+
+  let durMin = null;
+  const dur = text.match(/(\d+(?:[.,]\d+)?)\s*(?:min(?:ute)?s?|heures?|hours?|h)\b/i);
+  if(dur){ durMin = /(h|heur)/.test(dur[0].toLowerCase()) ? aiNum(dur[1])*60 : aiNum(dur[1]); }
+  if(durMin!=null) add('duration','Duration',durMin,'min','High');
+
+  const ct = [];
+  if(/18650/.test(text)) ct.push('18650');
+  if(/21700/.test(text)) ct.push('21700');
+  if(/4680/.test(text)) ct.push('4680');
+  if(/32140|32650/.test(text)) ct.push('32140');
+  if(/pouch|prismatique|prismatic/i.test(text)) ct.push('pouch / prismatic');
+  if(/lifepo4|li-fe|lfp/i.test(text)) ct.push('LiFePO4');
+  else if(/lipo|li-po/i.test(text)) ct.push('LiPo');
+  else if(/li-?ion|liion/i.test(text)) ct.push('Li-ion');
+  if(ct.length===1) add('cellType','Cell type',ct[0],'','Medium');
+  else if(ct.length>1) add('cellType','Cell type',ct.join(', '),'','Low');
+
+  const intent = {
+    replace: /remplac|replace|replacer|substitu/i.test(text),
+    smallest: /smallest|compact|minimum\s*volume|volume\s*(?:min|minimum)|plus\s*compact|la\s*plus\s*petite|mini(?:miser|mum)?/i.test(text),
+  };
+  return {fields, intent};
+}
+
+function cellNominalVoltage(f){
+  const s = String(f.cellType && f.cellType.value ? f.cellType.value : '').toLowerCase();
+  if(/lifepo4|lfp|li-fe/.test(s)) return 3.2;
+  if(/li-?ion|liion|18650|21700|4680|32140/.test(s)) return 3.6;
+  return 3.7;
+}
+
+function buildResult(res){
+  const {fields, intent} = res;
+  const f = {};
+  fields.forEach(x=>{ if(!f[x.key]) f[x.key] = Object.assign({}, x); });
+  const arr = Object.values(f);
+  const get = k => { const x=f[k]; if(!x) return null; const v = (typeof x.value==='number') ? x.value : aiNum(x.value); return (v!=null && isFinite(v)) ? v : null; };
+  const has = k => get(k)!=null;
+  function push(k,label,value,unit,source,confidence,note){ if(value==null || !isFinite(value) || f[k]) return; const o={key:k,label,value,unit,source,url:'',confidence,note}; f[k]=o; arr.push(o); }
+
+  if(has('S') && !has('vnom')) push('vnom','Voltage (nominal)', +(get('S')*cellNominalVoltage(f)).toFixed(1),'V','Estimated','Low', `S × ${cellNominalVoltage(f)} V/cell`);
+  if(has('vnom') && has('capacity')) push('energy','Energy', +(get('vnom')*get('capacity')).toFixed(1),'Wh','Calculated','High','V × C');
+  if(has('vnom') && has('energy') && !has('capacity')) push('capacity','Capacity', +(get('energy')/get('vnom')).toFixed(2),'Ah','Calculated','High','E ÷ V');
+  if(has('capacity') && has('crate')) push('ipeak','Current (peak)', +(get('capacity')*get('crate')).toFixed(0),'A','Calculated','High','C × C-rate');
+  if(has('vnom') && has('icont')) push('pcont','Power (continuous)', +(get('vnom')*get('icont')).toFixed(0),'W','Calculated','High','V × I');
+  if(has('S') && has('P')) push('N','Cell count', get('S')*get('P'),'','Calculated','High','S × P');
+  if(has('vnom') && has('icont') && has('duration') && !has('energy')) push('energy','Energy', +(get('vnom')*get('icont')*get('duration')/60).toFixed(1),'Wh','Calculated','Medium','V × I × t');
+
+  const contradictions = [];
+  if(has('vnom') && has('S')){
+    const expect = get('S')*cellNominalVoltage(f);
+    if(Math.abs(get('vnom')-expect) > 1.5*get('S')) contradictions.push(`Tension ${get('vnom')} V incompatible avec une config ${get('S')}S (attendu ≈ ${expect.toFixed(1)} V).`);
+  }
+  if(has('N') && has('S') && has('P') && get('N') !== get('S')*get('P')) contradictions.push(`Nombre de cellules ${get('N')} incohérent avec ${get('S')}S${get('P')}P (= ${get('S')*get('P')}).`);
+  if(has('energy') && has('vnom') && has('capacity')){
+    const evc = get('vnom')*get('capacity');
+    if(Math.abs(get('energy')-evc) > 0.05*get('energy')) contradictions.push(`Énergie ${get('energy')} Wh incohérente avec V×C = ${evc.toFixed(1)} Wh.`);
+  }
+
+  const missing = [];
+  if(!has('vnom') && !has('vmin') && !has('vmax')) missing.push({label:'Voltage (nominal / min / max)'});
+  if(!has('capacity') && !has('energy')) missing.push({label:'Capacity (Ah) or Energy (Wh)'});
+  if(!has('icont') && !has('ipeak') && !has('pcont') && !has('ppeak')) missing.push({label:'Current (A) or Power (W)'});
+  if((intent && (intent.replace||intent.smallest)) && !has('mass') && !f.dims) missing.push({label:'Dimensions / Mass (pour optimiser le volume)'});
+
+  return {fields:arr, missing, contradictions, intent};
+}
+
+function confClass(c){ c=(c||'').toLowerCase(); return c==='high'?'high':(c==='medium'?'medium':'low'); }
+function isNumericField(v){
+  if(typeof v==='number') return true;
+  if(v==null) return true;
+  const s = String(v).replace(',','.');
+  return s.trim()!=='' && !isNaN(Number(s)) && !/[×x*\u00d7]/.test(s) && !/[A-Za-z]/.test(s);
+}
+
+function renderAIFields(){
+  const host = document.getElementById('ai-fields-body');
+  host.innerHTML = '';
+  AI.currentFields.forEach((f,i)=>{
+    const type = isNumericField(f.value) ? 'number' : 'text';
+    const srcHtml = f.url ? `<a href="${esc(f.url)}" target="_blank" rel="noopener">${esc(f.source)}</a>` : esc(f.source);
+    const note = f.note ? ` <span class="ai-row-src">${esc(f.note)}</span>` : '';
+    const div = document.createElement('div');
+    div.className='ai-row';
+    div.innerHTML = `<span class="ai-row-label">${esc(f.label||f.key)}</span>
+      <input type="${type}" step="any" data-i="${i}" value="${esc(f.value)}">
+      <span class="ai-row-unit">${esc(f.unit||'')}</span>
+      <span class="ai-row-srcwrap"><span class="conf ${confClass(f.confidence)}">${esc(f.confidence||'?')}</span><span class="ai-row-src">${srcHtml}${note}</span></span>
+      <button class="ai-row-del" data-i="${i}" title="Supprimer">×</button>`;
+    host.appendChild(div);
+  });
+}
+
+function showAIResult(result){
+  AI.currentFields = result.fields.map(f=>Object.assign({},f));
+  AI.currentIntent = result.intent;
+  renderAIFields();
+  const miss = document.getElementById('ai-missing');
+  miss.innerHTML = result.missing.length ? result.missing.map(m=>`<div class="item warn">${esc(m.label)}</div>`).join('') : '<div class="item ok">Toutes les informations essentielles sont présentes.</div>';
+  document.getElementById('ai-missing-block').style.display='block';
+  const contra = document.getElementById('ai-contra');
+  contra.innerHTML = result.contradictions.map(c=>`<div class="item warn">${esc(c)}</div>`).join('');
+  document.getElementById('ai-contra-block').style.display = result.contradictions.length ? 'block' : 'none';
+  document.getElementById('ai-goal').value = (result.intent && result.intent.smallest) ? 'minVol' : 'balanced';
+  document.getElementById('ai-results-modal').style.display = 'flex';
+}
+function closeAIModal(){ document.getElementById('ai-results-modal').style.display='none'; }
+
+function mapCellType(s){
+  if(!s) return null;
+  s = String(s).toLowerCase();
+  if(s.includes('21700')) return '21700';
+  if(s.includes('18650')) return '18650';
+  if(s.includes('4680')) return '4680';
+  if(s.includes('32140')||s.includes('32650')||s.includes('lifepo4')||s.includes('lfp')||s.includes('li-fe')) return '32140';
+  if(s.includes('pouch')||s.includes('lipo')||s.includes('li-po')) return 'pouch';
+  if(s.includes('prismatic')||s.includes('prismatique')) return 'prismatic';
+  return null;
+}
+
+function applyExtracted(){
+  const get = k => { const x = AI.currentFields.find(y=>y.key===k); if(!x) return null; const v = (typeof x.value==='number') ? x.value : aiNum(x.value); return (v!=null && isFinite(v)) ? v : null; };
+  const setV = (id,v)=>{ document.getElementById(id).value = (v!=null && isFinite(v)) ? v : ''; };
+  setV('r-vnom', get('vnom'));
+  setV('r-vmin', get('vmin'));
+  setV('r-vmax', get('vmax'));
+  setV('r-pcont', get('pcont'));
+  setV('r-ppeak', get('ppeak'));
+  setV('r-icont', get('icont'));
+  setV('r-ipeak', get('ipeak'));
+  setV('r-energ', get('energy'));
+  setV('r-cap', get('capacity'));
+
+  const ctField = AI.currentFields.find(y=>y.key==='cellType');
+  const ct = ctField ? String(ctField.value).toLowerCase() : '';
+  const mapped = mapCellType(ct);
+  if(mapped){ document.getElementById('r-cell-type').value = mapped; syncCellInputs(mapped); }
+  const setCell = (id,key)=>{ const v=get(key); if(v!=null) document.getElementById(id).value=v; };
+  setCell('r-cap-cell','cellCap');
+  setCell('r-vnom-cell','cellVnom');
+  setCell('r-vmin-cell','cellVmin');
+  setCell('r-vmax-cell','cellVmax');
+  setCell('r-icont-cell','cellIcont');
+  setCell('r-ipeak-cell','cellIpeak');
+  setCell('r-icharge-cell','cellIcharge');
+  setCell('r-mass-cell','cellMass');
+
+  const S=get('S'), P=get('P');
+  if(S!=null){
+    document.getElementById('r-override').checked = true;
+    document.getElementById('r-s').value = S;
+    document.getElementById('r-p').value = (P!=null?P:1);
+  } else {
+    document.getElementById('r-override').checked = false;
+  }
+
+  REQ.selectedKey = document.getElementById('ai-goal').value;
+  closeAIModal();
+  if(currentMode!=='req') setMode('req');
+  else recompute();
+}
+
+/* ---------- AI events ---------- */
+document.querySelectorAll('.ai-tab').forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    document.querySelectorAll('.ai-tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    ['describe','upload','search'].forEach(p=>{ document.getElementById('ai-pane-'+p).style.display = (p===tab.dataset.aitab)?'':'none'; });
+  });
+});
+document.getElementById('btn-ai-extract').addEventListener('click', ()=>{
+  const t = document.getElementById('ai-text').value;
+  if(!t.trim()){ log('Décrivez vos besoins d\'abord.', 'warn'); return; }
+  showAIResult(buildResult(extractFromText(t)));
+});
+function doSearch(){
+  const q = (document.getElementById('ai-search-input').value||'').toLowerCase().trim();
+  if(!q){ log('Entrez un nom ou une référence.', 'warn'); return; }
+  const entry = REFERENCE_DB.find(e=> e.name.toLowerCase().includes(q) || e.aliases.some(a=> q.includes(a) || a.includes(q)));
+  if(!entry){
+    log('Référence inconnue : « ' + q + ' » (bibliothèque locale). La recherche web en direct nécessite un backend.', 'warn');
+    setStatus('Référence non trouvée. Recherche web = backend requis.');
+    return;
+  }
+  showAIResult(buildResult({fields: entry.fields.map(f=>Object.assign({},f)), intent:{replace:true, smallest:false}}));
+}
+document.getElementById('btn-ai-search').addEventListener('click', doSearch);
+document.getElementById('ai-search-input').addEventListener('keydown', e=>{ if(e.key==='Enter') doSearch(); });
+
+function loadPDFJS(){
+  return new Promise((res,rej)=>{
+    if(window.pdfjsLib) return res();
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.min.js';
+    s.onload = ()=>res(); s.onerror = ()=>rej(new Error('pdf.js indisponible (hors-ligne)'));
+    document.head.appendChild(s);
+  });
+}
+async function extractPDF(file){
+  try{
+    await loadPDFJS();
+    const buf = await file.arrayBuffer();
+    const pdf = await window.pdfjsLib.getDocument({data:buf}).promise;
+    let text = '';
+    for(let p=1; p<=pdf.numPages; p++){
+      const page = await pdf.getPage(p);
+      const content = await page.getTextContent();
+      text += content.items.map(it=>it.str).join(' ') + '\n';
+    }
+    showAIResult(buildResult(extractFromText(text)));
+  }catch(err){
+    log('Extraction PDF impossible : ' + err.message, 'err');
+    setStatus('Échec extraction PDF — collez le texte dans « Describe ».');
+  }
+}
+document.getElementById('btn-ai-upload').addEventListener('click', ()=>document.getElementById('ai-file').click());
+document.getElementById('ai-file').addEventListener('change', e=>{
+  const file = e.target.files[0]; if(!file) return;
+  const ext = (file.name.split('.').pop()||'').toLowerCase();
+  if(['png','jpg','jpeg','webp','gif'].includes(ext)){
+    log('OCR image : nécessite un backend de vision — collez le texte de l\'étiquette dans « Describe ».', 'warn');
+    setStatus('OCR image non disponible (backend requis). Utilisez « Describe » ou un fichier texte/PDF.');
+    return;
+  }
+  if(ext==='pdf'){ extractPDF(file); return; }
+  const reader = new FileReader();
+  reader.onload = ev => showAIResult(buildResult(extractFromText(ev.target.result)));
+  reader.readAsText(file);
+});
+document.getElementById('ai-fields-body').addEventListener('input', e=>{
+  const i = e.target.dataset.i;
+  if(i==null) return;
+  const f = AI.currentFields[Number(i)];
+  if(f) f.value = e.target.value;
+});
+document.getElementById('ai-fields-body').addEventListener('click', e=>{
+  if(e.target.classList.contains('ai-row-del')){
+    AI.currentFields.splice(Number(e.target.dataset.i),1);
+    renderAIFields();
+  }
+});
+document.getElementById('ai-close').addEventListener('click', closeAIModal);
+document.getElementById('ai-cancel').addEventListener('click', closeAIModal);
+document.getElementById('ai-apply').addEventListener('click', applyExtracted);
+document.getElementById('ai-results-modal').addEventListener('click', e=>{ if(e.target.id==='ai-results-modal') closeAIModal(); });
+document.getElementById('ai-lib-hint').textContent = 'Bibliothèque : ' + REFERENCE_DB.map(e=>e.name.split(' (')[0]).join(' · ');
+
+/* ---------- init ---------- */
+buildLegend();
+syncCellInputs('21700');
+log('Interface prête. STL uniquement dans cette démo (STEP requiert le backend fourni séparément).');
+log('Mode « Design from Requirements » disponible — dimensionnement inverse + visualisation 3D (aucun export CAO).', 'ok');
+
+})();
+</script>
+</body>
+</html>
