@@ -175,3 +175,14 @@
     }
   });
 })();
+
+/* ── reveal au scroll ── */
+(() => {
+  const targets = document.querySelectorAll('.section-heading, .section-intro, .project-card, .skills-list li, .about-text, .contact-heading, .contact-email, .text-link.github');
+  targets.forEach(el => el.classList.add('reveal'));
+  if (!('IntersectionObserver' in window)) { targets.forEach(el => el.classList.add('is-visible')); return; }
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('is-visible'); io.unobserve(e.target); } });
+  }, { threshold: 0.1, rootMargin: '0px 0px -8% 0px' });
+  targets.forEach(el => io.observe(el));
+})();
