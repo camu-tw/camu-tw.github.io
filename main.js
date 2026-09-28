@@ -179,12 +179,13 @@
         if (Rr) { p.vx += (Rr.x - p.x) * 0.018; p.vy += (Rr.y - p.y) * 0.018; }
         p.x += p.vx; p.y += p.vy;
       }
-      const tf = `translate(${p.x.toFixed(2)}px, ${p.y.toFixed(2)}px) scale(${Math.max(0, p.s).toFixed(3)})`;
-      p.el.style.transform = tf;
-      p.el.style.opacity = p.s <= 0.02 ? '0' : Math.min(1, p.s).toFixed(3);
+      const opacity = p.s <= 0.02 ? '0' : Math.min(1, p.s).toFixed(3);
+      const tf = `translate3d(${p.x.toFixed(2)}px, ${p.y.toFixed(2)}px, 0) scale(${Math.max(0, p.s).toFixed(3)})`;
+      p.el.style.setProperty('--bt', tf);
+      p.el.style.setProperty('--bo', opacity);
       if (p.blob) {
-        p.blob.style.transform = tf;
-        p.blob.style.opacity = p.s <= 0.02 ? '0' : '1';
+        p.blob.style.setProperty('--bt', tf);
+        p.blob.style.setProperty('--bo', opacity);
       }
     });
     kick.x *= 0.88; kick.y *= 0.88;
