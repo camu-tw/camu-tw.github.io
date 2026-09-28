@@ -1,0 +1,724 @@
+<!DOCTYPE html><html lang="fr" data-lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DUA — Fiche technique / Datasheet</title>
+<style>
+:root{color-scheme:light;--ink:#1c1b19;--ink2:#6f6d68;--ink3:#a9a5a0;--hair:#e7e4e0;--hair2:#f0edea;
+--bg:#fbfaf9;--sf:#fff;--acc:#c4552a;--accbg:#fbf1ec;--accln:#eddcd3;--ok:#3f7a52;--warn:#a8712a;--dgr:#a33c2f;
+--r:14px;--r2:9px;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:82px}
+body{margin:0;background:var(--bg);color:var(--ink);
+font:400 16.5px/1.68 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Inter,system-ui,sans-serif;
+-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+.wrap{max-width:1040px;margin:0 auto;padding:0 32px}
+h1,h2,h3,h4,h5{margin:0;font-weight:500;letter-spacing:-.021em}
+h1{font-size:clamp(34px,5.2vw,56px);line-height:1.05;letter-spacing:-.035em}
+h2{font-size:31px;line-height:1.18} h3{font-size:23px;line-height:1.24}
+h4{font-size:17.5px;line-height:1.35}
+h5{font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink3);font-weight:500}
+p{margin:0 0 13px} p:last-child{margin-bottom:0}
+a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+code,.mono{font-family:var(--mono);font-size:.86em}
+code{background:var(--hair2);padding:1px 5px;border-radius:4px}
+.small{font-size:14px;line-height:1.55} .muted{color:var(--ink2)}
+.danger{color:var(--dgr)} .ok{color:var(--ok)} .val{font-weight:500}
+.strike{text-decoration:line-through;text-decoration-thickness:1px}
+.num{font-variant-numeric:tabular-nums;text-align:right}
+/* --- bilinguisme : purement declaratif --- */
+.l-fr,.l-en{display:contents}
+html[data-lang="fr"] .l-en{display:none}
+html[data-lang="en"] .l-fr{display:none}
+nav{position:sticky;top:0;z-index:60;background:rgba(251,250,249,.88);
+backdrop-filter:saturate(180%) blur(18px);border-bottom:1px solid var(--hair)}
+nav .wrap{display:flex;align-items:center;gap:20px;height:56px}
+.brand{font-weight:500;font-size:14.5px;white-space:nowrap;letter-spacing:-.01em}
+.brand em{font-style:normal;color:var(--ink3);font-weight:400}
+.navl{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;flex:1}
+.navl::-webkit-scrollbar{display:none}
+.navl a{color:var(--ink2);font-size:13.5px;padding:6px 10px;border-radius:7px;white-space:nowrap}
+.navl a:hover{background:var(--hair2);color:var(--ink);text-decoration:none}
+.lang{display:flex;gap:0;border:1px solid var(--hair);border-radius:8px;overflow:hidden;flex:none}
+.lang button{font:inherit;font-size:12.5px;font-weight:500;padding:5px 11px;border:0;
+background:var(--sf);color:var(--ink2);cursor:pointer}
+.lang button.on{background:var(--ink);color:#fff}
+header.hero{padding:72px 0 0}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;
+color:var(--acc);margin-bottom:20px}
+.lede{font-size:20.5px;line-height:1.55;color:var(--ink2);max-width:70ch;margin:26px 0 0;
+letter-spacing:-.011em}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:1px;
+background:var(--hair);border-radius:var(--r);overflow:hidden;margin:38px 0 0}
+.stat{background:var(--sf);padding:18px 20px}
+.stat b{display:block;font-size:25px;font-weight:500;letter-spacing:-.028em;
+font-variant-numeric:tabular-nums}
+.stat span{font-size:12.5px;color:var(--ink3)}
+section{padding:88px 0 0}
+.sh{display:flex;align-items:baseline;gap:14px;margin-bottom:10px}
+.sn{font-family:var(--mono);font-size:12.5px;color:var(--ink3);letter-spacing:.05em}
+.sub{color:var(--ink2);max-width:74ch;margin:14px 0 30px;font-size:17px}
+.card{background:var(--sf);border:1px solid var(--hair);border-radius:var(--r);
+padding:24px 26px;margin:18px 0}
+.note{background:var(--accbg);border:1px solid var(--accln);border-radius:var(--r);
+padding:20px 24px;margin:22px 0;font-size:15.5px;line-height:1.62}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th{text-align:left;font-weight:500;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;
+color:var(--ink3);padding:0 12px 9px 0;border-bottom:1px solid var(--hair)}
+td{padding:10px 12px 10px 0;border-bottom:1px solid var(--hair2);vertical-align:top}
+tr:last-child td{border-bottom:none}
+th.num,td.num{text-align:right;padding-right:0}
+tr.hi td{background:var(--accbg)}
+tr.grp td{border-bottom:1px solid var(--hair);padding-top:16px}
+tr.tot td{border-top:2px solid var(--ink);border-bottom:none;padding-top:12px}
+td.ind{padding-left:16px}
+.tblwrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:30px}
+.prov{font-size:10.5px;font-family:var(--mono);padding:2px 6px;border-radius:4px;
+white-space:nowrap;background:var(--hair2);color:var(--ink2)}
+.p-measured{background:#e8f0ea;color:var(--ok)}
+.p-datasheet{background:#e9eef4;color:#3a5a7a}
+.p-estimate{background:#fbf2e4;color:var(--warn)}
+.p-assumed{background:#fbeae7;color:var(--dgr)}
+.pill{font-size:11.5px;padding:2px 9px;border-radius:20px;font-weight:500;white-space:nowrap}
+.pok{background:#eef4ef;color:var(--ok)} .phigh{background:#fbeae7;color:var(--dgr)}
+.reflist{list-style:none;padding:0;margin:0}
+.reflist li{padding:13px 0;border-bottom:1px solid var(--hair2)}
+.reflist li:last-child{border:none}
+.reflist b{display:block;font-size:15.5px;font-weight:500}
+.reflist span{display:block;font-size:14px;color:var(--ink2);margin-top:3px;line-height:1.55}
+/* --- visionneuse 3D --- */
+.viewer{background:var(--sf);border:1px solid var(--hair);border-radius:var(--r);
+overflow:hidden;margin:20px 0}
+.vstage{position:relative;height:440px;background:
+linear-gradient(180deg,#fdfcfb 0%,#f2efec 100%);cursor:grab}
+.vstage.drag{cursor:grabbing}
+.vstage canvas{display:block;width:100%;height:100%}
+.vmsg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+text-align:center;padding:30px;color:var(--ink3);font-size:14.5px;line-height:1.6}
+.vbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:12px 16px;
+border-top:1px solid var(--hair);background:var(--bg)}
+.vbar button{font:inherit;font-size:13px;padding:6px 12px;border-radius:7px;
+border:1px solid var(--hair);background:var(--sf);color:var(--ink2);cursor:pointer}
+.vbar button:hover{border-color:#dcd8d3;color:var(--ink)}
+.vbar button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.vbar .sp{flex:1}
+.vinfo{font-size:12px;color:var(--ink3);font-family:var(--mono)}
+.vdrop{position:absolute;inset:0;background:rgba(196,85,42,.08);
+border:2px dashed var(--acc);display:none;align-items:center;justify-content:center;
+color:var(--acc);font-size:15px;font-weight:500}
+.vstage.over .vdrop{display:flex}
+footer{margin-top:100px;padding:38px 0 62px;border-top:1px solid var(--hair);
+color:var(--ink3);font-size:13.5px}
+@media(max-width:820px){.grid2{grid-template-columns:1fr;gap:22px}
+ .wrap{padding:0 20px}.navl{display:none}section{padding-top:64px}
+ .vstage{height:320px}}
+@media print{nav{display:none}.viewer{display:none}}
+</style></head><body>
+
+<nav><div class="wrap">
+<div class="brand">DUA <em>· <span class="l-fr">fiche technique v2.0</span><span class="l-en">datasheet v2.0</span></em></div>
+<div class="navl">
+<a href="#concept">01 <span class="l-fr">Concept</span><span class="l-en">Concept</span></a>
+<a href="#specs">02 <span class="l-fr">Spécifications</span><span class="l-en">Specifications</span></a>
+<a href="#config">03 <span class="l-fr">Configuration</span><span class="l-en">Configuration</span></a>
+<a href="#vue3d">04 <span class="l-fr">Vue 3D</span><span class="l-en">3D view</span></a>
+<a href="#propulsion">05 <span class="l-fr">Propulsion</span><span class="l-en">Propulsion</span></a>
+<a href="#masse">06 <span class="l-fr">Masse</span><span class="l-en">Mass</span></a>
+<a href="#energie">07 <span class="l-fr">Énergie</span><span class="l-en">Energy</span></a>
+<a href="#soussystemes">08 <span class="l-fr">Sous-systèmes</span><span class="l-en">Subsystems</span></a>
+<a href="#verifs">09 <span class="l-fr">Vérifications</span><span class="l-en">Verifications</span></a>
+<a href="#corrections">10 <span class="l-fr">Corrections</span><span class="l-en">Corrections</span></a>
+<a href="#limites">11 <span class="l-fr">Limites</span><span class="l-en">Limits</span></a>
+<a href="#methode">12 <span class="l-fr">Méthode</span><span class="l-en">Method</span></a>
+</div>
+<div class="lang"><button data-set="fr" class="on">FR</button><button data-set="en">EN</button></div>
+</div></nav>
+
+<header class="hero"><div class="wrap">
+<div class="eyebrow"><span class="l-fr">Drone d'Urgence Autonome · fiche technique · révision 2.0</span><span class="l-en">Autonomous Emergency Drone · datasheet · revision 2.0</span></div>
+<h1><span class="l-fr">Un kit de survie médical<br>déposé là où personne n'arrive.</span><span class="l-en">A medical survival kit<br>delivered where no one can reach.</span></h1>
+<p class="lede"><span class="l-fr">Hexarotor autonome de 19,2 kg conçu pour acheminer un module de survie de 3,0 kg jusqu'à une victime isolée, le descendre au treuil sur 10 mètres de câble, maintenir une liaison audio et vidéo avec un médecin distant pendant l'intervention, puis rentrer seul. Rayon d'action 8 km. Chaque chiffre de cette fiche est calculé par un modèle vérifié, pas affirmé.</span><span class="l-en">A 19.2 kg autonomous hexarotor built to carry a 3.0 kg survival module to an isolated casualty, winch it down 10 metres of cable, hold an audio and video link with a remote physician throughout, then return on its own. Operating radius 8 km. Every figure in this datasheet is computed by a verified model, not asserted.</span></p>
+<div class="stats"><div class="stat"><b><span class="l-fr">19,2</span><span class="l-en">19.2</span></b><span><span class="l-fr">kg au décollage</span><span class="l-en">kg all-up weight</span></span></div><div class="stat"><b><span class="l-fr">3,0</span><span class="l-en">3.0</span></b><span><span class="l-fr">kg de charge utile</span><span class="l-en">kg payload</span></span></div><div class="stat"><b><span class="l-fr">8</span><span class="l-en">8</span></b><span><span class="l-fr">km de rayon d'action</span><span class="l-en">km operating radius</span></span></div><div class="stat"><b><span class="l-fr">39</span><span class="l-en">39</span></b><span><span class="l-fr">min de mission</span><span class="l-en">min mission</span></span></div><div class="stat"><b><span class="l-fr">2,72</span><span class="l-en">2.72</span></b><span><span class="l-fr">poussée / poids</span><span class="l-en">thrust-to-weight</span></span></div><div class="stat"><b><span class="l-fr">1,49</span><span class="l-en">1.49</span></b><span><span class="l-fr">m d'envergure</span><span class="l-en">m span</span></span></div></div>
+</div></header>
+
+<section id="concept"><div class="wrap">
+<div class="sh"><span class="sn">01</span><h2><span class="l-fr">Concept d'opération</span><span class="l-en">Concept of operations</span></h2></div>
+<p class="sub"><span class="l-fr">Le DUA répond à un cas précis : une victime en zone rurale ou périurbaine, hors de portée rapide d'un SMUR terrestre, pour qui les premières minutes comptent.</span><span class="l-en">The DUA addresses one specific case: a casualty in a rural or peri-urban area, out of quick reach of a ground ambulance, for whom the first minutes matter.</span></p>
+<div class="grid2">
+<div><h5><span class="l-fr">Déroulé</span><span class="l-en">Sequence</span></h5>
+<ol class="small" style="padding-left:20px;line-height:1.7;color:var(--ink2)">
+<li><span class="l-fr">Réception de l'alerte et des coordonnées GPS de la victime.</span><span class="l-en">Alert received with the casualty’s GPS coordinates.</span></li>
+<li><span class="l-fr">Auto-diagnostic complet du système ; tout défaut bloque le décollage.</span><span class="l-en">Full system self-check; any fault inhibits take-off.</span></li>
+<li><span class="l-fr">Vol autonome hors vue jusqu'au site.</span><span class="l-en">Autonomous beyond-visual-line-of-sight flight to the site.</span></li>
+<li><span class="l-fr">Identification de la victime par caméra thermique, puis vol stationnaire stabilisé.</span><span class="l-en">Casualty identification by thermal camera, then stabilised hover.</span></li>
+<li><span class="l-fr">Descente du module au treuil, zone d'atterrissage annoncée au sol.</span><span class="l-en">Winched descent of the module, landing zone announced on the ground.</span></li>
+<li><span class="l-fr">Assistance médicale à distance : le médecin voit, entend et guide.</span><span class="l-en">Remote medical assistance: the physician sees, hears and guides.</span></li>
+<li><span class="l-fr">Remontée du câble et retour autonome ; le module reste avec la victime.</span><span class="l-en">Cable retrieval and autonomous return; the module stays with the casualty.</span></li>
+</ol></div>
+<div><h5><span class="l-fr">Ce qui contraint le dimensionnement</span><span class="l-en">What drives the sizing</span></h5>
+<p class="small muted"><span class="l-fr">Trois exigences gouvernent tout le reste. Le drone doit pouvoir <b>rentrer</b> depuis le point le plus éloigné, face au vent, sur une batterie en fin de vie — c'est ce qui fixe l'énergie embarquée. Il doit conserver assez de poussée pour manœuvrer et encaisser une rafale, ce qui fixe la propulsion. Et le module ne doit blesser personne s'il tombe, ce qui fixe la sécurité du largage.</span><span class="l-en">Three requirements govern everything else. The aircraft must be able to <b>return</b> from the furthest point, into wind, on an end-of-life battery — that sets the onboard energy. It must keep enough thrust to manoeuvre and absorb a gust, which sets the propulsion. And the module must not injure anyone if it falls, which sets release safety.</span></p>
+<div class="note" style="margin-top:18px"><b><span class="l-fr">Portée</span><span class="l-en">Range</span></b> — <span class="l-fr">Le dossier initial annonçait 15 km. Le modèle montre que cette portée n'est atteignable par aucune configuration multirotor de cette classe, quelle que soit la charge utile. 8 km est la portée qui ferme réellement, avec 13 % de marge d'énergie.</span><span class="l-en">The initial dossier claimed 15 km. The model shows this range is not reachable by any multirotor configuration in this class, whatever the payload. 8 km is the range that actually closes, with 13 % energy margin.</span></div>
+</div></div>
+</div></section>
+
+<section id="specs"><div class="wrap">
+<div class="sh"><span class="sn">02</span><h2><span class="l-fr">Spécifications</span><span class="l-en">Specifications</span></h2></div>
+<p class="sub"><span class="l-fr">Point de conception principal : charge utile complète, marge d'énergie conservée.</span><span class="l-en">Primary design point: full payload, energy margin preserved.</span></p>
+<div class="tblwrap"><table><tbody><tr><td><span class="l-fr">Architecture</span><span class="l-en">Architecture</span></td><td class='val'><span class="l-fr">Hexarotor, 6 rotors coplanaires</span><span class="l-en">Hexarotor, 6 coplanar rotors</span></td><td class='small muted'><span class="l-fr">Redondance : une panne moteur reste contrôlable</span><span class="l-en">Redundancy: single motor failure remains controllable</span></td></tr><tr><td><span class="l-fr">Envergure hors tout</span><span class="l-en">Overall span</span></td><td class='val'><span class="l-fr">1 494</span><span class="l-en">1 494</span> mm</td><td class='small muted'><span class="l-fr">Entraxe entre rotors adjacents <span class="l-fr">747</span><span class="l-en">747</span> mm, garde <span class="l-fr">36</span><span class="l-en">36</span> mm</span><span class="l-en">Adjacent rotor spacing <span class="l-fr">747</span><span class="l-en">747</span> mm, clearance <span class="l-fr">36</span><span class="l-en">36</span> mm</span></td></tr><tr><td><span class="l-fr">Masse au décollage (AUW)</span><span class="l-en">All-up weight (AUW)</span></td><td class='val'><span class="l-fr">19,20</span><span class="l-en">19.20</span> kg</td><td class='small muted'><span class="l-fr">MTOW constructeur <span class="l-fr">21</span><span class="l-en">21</span> kg — marge <span class="l-fr">1 798</span><span class="l-en">1 798</span> g</span><span class="l-en">Manufacturer MTOW <span class="l-fr">21</span><span class="l-en">21</span> kg — margin <span class="l-fr">1 798</span><span class="l-en">1 798</span> g</span></td></tr><tr><td><span class="l-fr">Masse à vide</span><span class="l-en">Empty weight</span></td><td class='val'><span class="l-fr">16,20</span><span class="l-en">16.20</span> kg</td><td class='small muted'><span class="l-fr">Sans le module de survie</span><span class="l-en">Excluding the survival module</span></td></tr><tr><td><span class="l-fr">Charge utile</span><span class="l-en">Payload</span></td><td class='val'><span class="l-fr">3,0</span><span class="l-en">3.0</span> kg</td><td class='small muted'><span class="l-fr">Module de survie médical</span><span class="l-en">Medical survival module</span></td></tr><tr><td><span class="l-fr">Rayon d'action</span><span class="l-en">Operating radius</span></td><td class='val'><span class="l-fr">8</span><span class="l-en">8</span> km</td><td class='small muted'><span class="l-fr">Soit <span class="l-fr">16</span><span class="l-en">16</span> km aller-retour, retour face à <span class="l-fr">8</span><span class="l-en">8</span> m/s de vent</span><span class="l-en">That is <span class="l-fr">16</span><span class="l-en">16</span> km round trip, return against <span class="l-fr">8</span><span class="l-en">8</span> m/s headwind</span></td></tr><tr><td><span class="l-fr">Durée de mission</span><span class="l-en">Mission duration</span></td><td class='val'><span class="l-fr">39</span><span class="l-en">39</span> min</td><td class='small muted'><span class="l-fr">Dont <span class="l-fr">8</span><span class="l-en">8</span> min de vol stationnaire sur site</span><span class="l-en">Including <span class="l-fr">8</span><span class="l-en">8</span> min hovering on site</span></td></tr><tr><td><span class="l-fr">Vitesse de croisière</span><span class="l-en">Cruise speed</span></td><td class='val'><span class="l-fr">15</span><span class="l-en">15</span> m/s (<span class="l-fr">54</span><span class="l-en">54</span> km/h)</td><td class='small muted'><span class="l-fr">Vitesse de meilleure portée calculée : <span class="l-fr">17,2</span><span class="l-en">17.2</span> m/s</span><span class="l-en">Computed best-range speed: <span class="l-fr">17,2</span><span class="l-en">17.2</span> m/s</span></td></tr><tr><td><span class="l-fr">Rapport poussée / poids</span><span class="l-en">Thrust-to-weight ratio</span></td><td class='val'><span class="l-fr">2,72</span><span class="l-en">2.72</span></td><td class='small muted'><span class="l-fr">Requis ≥ <span class="l-fr">2,0</span><span class="l-en">2.0</span> · poussée maximale <span class="l-fr">513</span><span class="l-en">513</span> N</span><span class="l-en">Required ≥ <span class="l-fr">2,0</span><span class="l-en">2.0</span> · maximum thrust <span class="l-fr">513</span><span class="l-en">513</span> N</span></td></tr><tr><td><span class="l-fr">Puissance en vol stationnaire</span><span class="l-en">Hover power</span></td><td class='val'><span class="l-fr">1 763</span><span class="l-en">1 763</span> W</td><td class='small muted'><span class="l-fr">Propulsion <span class="l-fr">1 704</span><span class="l-en">1 704</span> W + avionique <span class="l-fr">59</span><span class="l-en">59</span> W</span><span class="l-en">Propulsion <span class="l-fr">1 704</span><span class="l-en">1 704</span> W + avionics <span class="l-fr">59</span><span class="l-en">59</span> W</span></td></tr><tr><td><span class="l-fr">Batterie</span><span class="l-en">Battery</span></td><td class='val'>12S8P · <span class="l-fr">1 728</span><span class="l-en">1 728</span> Wh</td><td class='small muted'><span class="l-fr">96 cellules Samsung INR21700-50S · <span class="l-fr">1 116</span><span class="l-en">1 116</span> Wh réellement utilisables</span><span class="l-en">96 Samsung INR21700-50S cells · <span class="l-fr">1 116</span><span class="l-en">1 116</span> Wh actually usable</span></td></tr><tr><td><span class="l-fr">Treuil</span><span class="l-en">Winch</span></td><td class='val'><span class="l-fr">Câble Dyneema SK99, <span class="l-fr">10</span><span class="l-en">10</span> m</span><span class="l-en">Dyneema SK99 cable, <span class="l-fr">10</span><span class="l-en">10</span> m</span></td><td class='small muted'><span class="l-fr">Réducteur cycloïdal <span class="l-fr">30</span><span class="l-en">30</span>:1 irréversible, frein à manque de courant</span><span class="l-en">Irreversible <span class="l-fr">30</span><span class="l-en">30</span>:1 cycloidal reducer, fail-safe brake</span></td></tr><tr><td><span class="l-fr">Vent maximal au largage</span><span class="l-en">Maximum wind at release</span></td><td class='val'><span class="l-fr">6</span><span class="l-en">6</span> m/s</td><td class='small muted'><span class="l-fr">Dérive du module <span class="l-fr">0,41</span><span class="l-en">0.41</span> m à cette limite</span><span class="l-en">Module drift <span class="l-fr">0,41</span><span class="l-en">0.41</span> m at this limit</span></td></tr></tbody></table></div>
+<div class="note"><span class="l-fr"><b>Variante longue portée.</b> En ramenant la charge utile à 2,0 kg, le même appareil atteint 10 km avec un pack 12S9P, pour une masse au décollage de 19,17 kg.</span><span class="l-en"><b>Long-range variant.</b> Reducing the payload to 2.0 kg lets the same aircraft reach 10 km on a 12S9P pack, at an all-up weight of 19.17 kg.</span></div>
+</div></section>
+
+<section id="config"><div class="wrap">
+<div class="sh"><span class="sn">03</span><h2><span class="l-fr">Choix de configuration</span><span class="l-en">Configuration choice</span></h2></div>
+<p class="sub"><span class="l-fr">Quatre architectures ont été évaluées avec le même couple moteur/hélice et le même modèle. Le constructeur publie un MTOW distinct pour chacune, et c’est cette donnée — pas une préférence — qui départage.</span><span class="l-en">Four architectures were evaluated with the same motor/propeller pair and the same model. The manufacturer publishes a distinct MTOW for each, and it is that data — not a preference — that decides.</span></p>
+<div class="tblwrap"><table><thead><tr>
+<th><span class="l-fr">Configuration</span><span class="l-en">Configuration</span></th><th class="num"><span class="l-fr">Rotors</span><span class="l-en">Rotors</span></th>
+<th class="num"><span class="l-fr">Bras</span><span class="l-en">Arms</span></th><th class="num"><span class="l-fr">Envergure</span><span class="l-en">Span</span></th>
+<th class="num"><span class="l-fr">Charge de disque</span><span class="l-en">Disc loading</span></th>
+<th class="num"><span class="l-fr">Masse</span><span class="l-en">Weight</span></th>
+<th class="num"><span class="l-fr">Portée</span><span class="l-en">Range</span></th>
+<th class="num"><span class="l-fr">Servos*</span><span class="l-en">Servos*</span></th>
+</tr></thead><tbody><tr><td><span class="l-fr">Quadrirotor en X</span><span class="l-en">Quadrotor, X layout</span></td><td class='num'>4</td><td class='num'>4</td><td class='num'><span class="l-fr">1 056</span><span class="l-en">1 056</span> mm</td><td class='num'><span class="l-fr">76</span><span class="l-en">76</span> N/m²</td><td class='num'><span class="l-fr">12,3</span><span class="l-en">12.3</span> kg</td><td class='num val'><span class="l-fr">2</span><span class="l-en">2</span> km</td><td class='num'>8</td></tr><tr class='hi'><td><span class="l-fr">Hexarotor</span><span class="l-en">Hexarotor</span></td><td class='num'>6</td><td class='num'>6</td><td class='num'><span class="l-fr">1 494</span><span class="l-en">1 494</span> mm</td><td class='num'><span class="l-fr">79</span><span class="l-en">79</span> N/m²</td><td class='num'><span class="l-fr">19,2</span><span class="l-en">19.2</span> kg</td><td class='num val'><span class="l-fr">8</span><span class="l-en">8</span> km</td><td class='num'>12</td></tr><tr><td><span class="l-fr">Octorotor coaxial, 4 bras</span><span class="l-en">Coaxial octorotor, 4 arms</span></td><td class='num'>8</td><td class='num'>4</td><td class='num'><span class="l-fr">1 056</span><span class="l-en">1 056</span> mm</td><td class='num'><span class="l-fr">155</span><span class="l-en">155</span> N/m²</td><td class='num'><span class="l-fr">25,1</span><span class="l-en">25.1</span> kg</td><td class='num val'><span class="l-fr">7</span><span class="l-en">7</span> km</td><td class='num'>8</td></tr><tr><td><span class="l-fr">Octorotor à plat</span><span class="l-en">Flat octorotor</span></td><td class='num'>8</td><td class='num'>8</td><td class='num'><span class="l-fr">1 951</span><span class="l-en">1 951</span> mm</td><td class='num'><span class="l-fr">79</span><span class="l-en">79</span> N/m²</td><td class='num'><span class="l-fr">25,5</span><span class="l-en">25.5</span> kg</td><td class='num val'><span class="l-fr">11</span><span class="l-en">11</span> km</td><td class='num'>16</td></tr></tbody></table></div>
+<p class="small muted"><span class="l-fr">* Nombre d’actionneurs nécessaires si la motorisation vectorielle bi-axiale est un jour installée : deux par bras.</span><span class="l-en">* Number of actuators required if bi-axial thrust vectoring is eventually fitted: two per arm.</span></p>
+
+<div class="note"><b><span class="l-fr">Règle de sélection</span><span class="l-en">Selection rule</span></b> — <span class="l-fr">La configuration la plus simple atteignant 8 km tout en restant sous 25 kg au décollage.</span><span class="l-en">The simplest configuration reaching 8 km while staying under 25 kg all-up weight.</span> <span class="l-fr">Retenir simplement la plus longue portée conduirait à l’octorotor à plat : trois kilomètres de plus, au prix de huit bras, de deux mètres d’envergure et d’un franchissement du plafond de masse que le projet se fixe.</span><span class="l-en">Simply taking the longest range would lead to the flat octorotor: three more kilometres, at the cost of eight arms, two metres of span, and crossing the mass ceiling the project sets itself.</span></div>
+
+<div class="grid2" style="margin-top:26px">
+<div><h5><span class="l-fr">Pourquoi le coaxial ne gagne pas</span><span class="l-en">Why coaxial does not win</span></h5>
+<p class="small muted"><span class="l-fr">Empiler deux rotors sur un même bras double la poussée disponible mais ne double pas la surface de disque — or c’est elle qui achète le rendement en vol stationnaire. La charge de disque passe à 155 N/m², soit le double des autres architectures, et le rotor inférieur travaille dans le sillage du supérieur. Résultat : il faut 168 cellules au lieu de 96 pour une portée plus courte.</span><span class="l-en">Stacking two rotors on one arm doubles the available thrust but does not double the disc area — and disc area is what buys hover efficiency. Disc loading rises to 155 N/m², twice that of the other architectures, and the lower rotor works in the wake of the upper one. The result: 168 cells instead of 96 for a shorter range.</span></p>
+<p class="small muted"><span class="l-fr">Ce résultat est robuste : en faisant varier le surcoût coaxial de 10 % à 30 %, la portée reste comprise entre 6 et 7 km. La conclusion ne dépend donc pas de ce paramètre, qui est pourtant le plus incertain du modèle.</span><span class="l-en">This result is robust: varying the coaxial penalty from 10 % to 30 % keeps the range between 6 and 7 km. The conclusion therefore does not hinge on that parameter, which is nonetheless the least certain in the model.</span></p></div>
+<div><h5><span class="l-fr">Tolérance aux pannes</span><span class="l-en">Failure tolerance</span></h5>
+<table class="small"><tbody><tr><td><span class="l-fr">Quadrirotor en X</span><span class="l-en">Quadrotor, X layout</span></td><td class='small'><span class="l-fr">Aucune — une panne moteur est une perte de contrôle</span><span class="l-en">None — a motor failure means loss of control</span></td></tr><tr><td><span class="l-fr">Hexarotor</span><span class="l-en">Hexarotor</span></td><td class='small'><span class="l-fr">Une panne moteur reste contrôlable en dégradé</span><span class="l-en">A single motor failure remains controllable</span></td></tr><tr><td><span class="l-fr">Octorotor coaxial, 4 bras</span><span class="l-en">Coaxial octorotor, 4 arms</span></td><td class='small'><span class="l-fr">Une panne moteur reste contrôlable ; deux si elles sont sur des bras opposés</span><span class="l-en">A single motor failure remains controllable; two if on opposite arms</span></td></tr><tr><td><span class="l-fr">Octorotor à plat</span><span class="l-en">Flat octorotor</span></td><td class='small'><span class="l-fr">Deux pannes moteur restent contrôlables</span><span class="l-en">Two motor failures remain controllable</span></td></tr></tbody></table>
+<p class="small muted" style="margin-top:12px"><span class="l-fr">La tolérance à une panne moteur est l’argument de sécurité le plus direct pour un vol hors vue au-dessus de personnes. Elle pèse davantage, dans un dossier SORA, que quelques kilomètres de portée.</span><span class="l-en">Tolerance to a motor failure is the most direct safety argument for beyond-visual-line-of-sight flight over people. In a SORA file it weighs more than a few kilometres of range.</span></p>
+</div></div>
+
+<h5 style="margin-top:34px"><span class="l-fr">Motorisation vectorielle : différée, pas abandonnée</span><span class="l-en">Thrust vectoring: deferred, not abandoned</span></h5>
+<p class="small muted" style="max-width:78ch"><span class="l-fr">Le dossier initial justifiait des moteurs sur cardans bi-axiaux par un gain de précision de largage qui s’est révélé inexistant : le module dérive sous l’effet de sa propre traînée, que le châssis reste horizontal ou non. Cet argument-là est mort. Mais il en reste trois que l’analyse n’a pas évalués, et qui peuvent être réels : le découplage du lacet, le rejet de rafales à une bande passante supérieure à celle d’une mise en assiette, et surtout le fait qu’un châssis qui ne s’incline pas n’injecte pas d’énergie dans le balancement du module pendant le treuillage. Ce dernier point est dynamique ; le calcul mené ici est statique et ne le couvre pas.</span><span class="l-en">The initial dossier justified bi-axially gimballed motors by a release-accuracy gain that turned out not to exist: the module drifts under its own drag whether or not the airframe stays level. That argument is dead. But three others remain unevaluated, and may well be real: yaw decoupling, gust rejection at a bandwidth higher than attitude change allows, and above all the fact that an airframe which does not tilt injects no energy into the module’s swing during winching. That last point is dynamic; the analysis here is static and does not cover it.</span></p>
+<p class="small muted" style="max-width:78ch"><span class="l-fr">La conception en tient compte : l’interface entre le bras et le moteur est spécifiée remplaçable dès le prototype, précisément pour qu’un cardan bi-axial puisse s’y substituer sans refaire la structure. Le prototype vole en fixe pour produire la référence de mesure qui manque — sans elle, adopter ou rejeter la vectorisation resterait une conviction, ce qui est exactement ce qui a produit l’erreur d’origine.</span><span class="l-en">The design accounts for this: the arm-to-motor interface is specified as replaceable from the prototype onwards, precisely so a bi-axial gimbal can take its place without redoing the structure. The prototype flies with fixed motors in order to produce the missing measurement baseline — without it, adopting or rejecting vectoring would remain a conviction, which is exactly what produced the original error.</span></p>
+</div></section>
+
+<section id="vue3d"><div class="wrap">
+<div class="sh"><span class="sn">04</span><h2><span class="l-fr">Vue 3D</span><span class="l-en">3D view</span></h2></div>
+<p class="sub"><span class="l-fr">Pièces issues de la CAO du projet, décimées pour l'affichage. Faites glisser pour tourner, molette pour zoomer. Vous pouvez aussi déposer un fichier STL sur la vue pour l'inspecter directement — c'est le point d'entrée prévu pour les prochaines pièces.</span><span class="l-en">Parts exported from the project CAD, decimated for display. Drag to rotate, scroll to zoom. You can also drop an STL file onto the view to inspect it directly — that is the intended entry point for future parts.</span></p>
+<div class="viewer"><div class="vstage" id="stage">
+<div class="vmsg" id="vmsg"><span class="l-fr">Chargement…</span><span class="l-en">Loading…</span></div>
+<div class="vdrop"><span class="l-fr">Déposer un fichier STL</span><span class="l-en">Drop an STL file</span></div>
+</div>
+<div class="vbar" id="vbar">
+<span class="sp"></span>
+<button id="btn-rot" class="on"><span class="l-fr">Rotation</span><span class="l-en">Spin</span></button>
+<button id="btn-wire"><span class="l-fr">Filaire</span><span class="l-en">Wireframe</span></button>
+<button id="btn-reset"><span class="l-fr">Recadrer</span><span class="l-en">Recentre</span></button>
+<span class="vinfo" id="vinfo"></span>
+</div></div>
+<p class="small muted"><span class="l-fr">Ces maillages sont décimés d'environ 90 % pour rester légers : ils servent à comprendre la géométrie, pas à prendre une cote. Les dimensions font foi sur la CAO.</span><span class="l-en">These meshes are decimated by roughly 90% to stay light: they are there to convey geometry, not to take a measurement. Dimensions are authoritative on the CAD only.</span></p>
+</div></section>
+
+<section id="propulsion"><div class="wrap">
+<div class="sh"><span class="sn">05</span><h2><span class="l-fr">Propulsion</span><span class="l-en">Propulsion</span></h2></div>
+<p class="sub"><span class="l-fr">T-Motor U8 Lite KV100 et hélice T-Motor G28x9.2 CF (28 pouces), sous 12S. Les 20 points ci-dessous sont des mesures de banc du constructeur. Les deux dernières colonnes sont recalculées à partir du couple et du régime : elles vérifient que chaque point respecte la conservation de l'énergie.</span><span class="l-en">T-Motor U8 Lite KV100 with a T-Motor G28x9.2 CF (28 pouces) propeller, on 12S. The 20 points below are manufacturer bench measurements. The last two columns are recomputed from torque and speed: they verify that each point respects conservation of energy.</span></p>
+<div class="tblwrap"><table><thead><tr>
+<th class="num"><span class="l-fr">Manette</span><span class="l-en">Throttle</span></th><th class="num"><span class="l-fr">Poussée</span><span class="l-en">Thrust</span></th>
+<th class="num"><span class="l-fr">Puissance</span><span class="l-en">Power</span></th><th class="num"><span class="l-fr">Courant</span><span class="l-en">Current</span></th>
+<th class="num"><span class="l-fr">Régime</span><span class="l-en">Speed</span></th><th class="num"><span class="l-fr">Bout de pale</span><span class="l-en">Tip speed</span></th>
+<th class="num"><span class="l-fr">Fig. mérite</span><span class="l-en">Fig. merit</span></th><th class="num"><span class="l-fr">Rendement</span><span class="l-en">Efficiency</span></th>
+</tr></thead><tbody><tr><td class='num'><span class="l-fr">40</span><span class="l-en">40</span> %</td><td class='num'><span class="l-fr">2 243</span><span class="l-en">2 243</span> g</td><td class='num'><span class="l-fr">168</span><span class="l-en">168</span> W</td><td class='num'><span class="l-fr">3,5</span><span class="l-en">3.5</span> A</td><td class='num'><span class="l-fr">1 896</span><span class="l-en">1 896</span></td><td class='num'><span class="l-fr">71</span><span class="l-en">71</span> m/s</td><td class='num'><span class="l-fr">0,684</span><span class="l-en">0.684</span></td><td class='num'><span class="l-fr">0,910</span><span class="l-en">0.910</span></td></tr><tr><td class='num'><span class="l-fr">44</span><span class="l-en">44</span> %</td><td class='num'><span class="l-fr">2 555</span><span class="l-en">2 555</span> g</td><td class='num'><span class="l-fr">202</span><span class="l-en">202</span> W</td><td class='num'><span class="l-fr">4,2</span><span class="l-en">4.2</span> A</td><td class='num'><span class="l-fr">2 020</span><span class="l-en">2 020</span></td><td class='num'><span class="l-fr">75</span><span class="l-en">75</span> m/s</td><td class='num'><span class="l-fr">0,707</span><span class="l-en">0.707</span></td><td class='num'><span class="l-fr">0,890</span><span class="l-en">0.890</span></td></tr><tr><td class='num'><span class="l-fr">46</span><span class="l-en">46</span> %</td><td class='num'><span class="l-fr">2 881</span><span class="l-en">2 881</span> g</td><td class='num'><span class="l-fr">245</span><span class="l-en">245</span> W</td><td class='num'><span class="l-fr">5,1</span><span class="l-en">5.1</span> A</td><td class='num'><span class="l-fr">2 144</span><span class="l-en">2 144</span></td><td class='num'><span class="l-fr">80</span><span class="l-en">80</span> m/s</td><td class='num'><span class="l-fr">0,685</span><span class="l-en">0.685</span></td><td class='num'><span class="l-fr">0,907</span><span class="l-en">0.907</span></td></tr><tr class='hi'><td class='num'><span class="l-fr">48</span><span class="l-en">48</span> %</td><td class='num'><span class="l-fr">3 008</span><span class="l-en">3 008</span> g</td><td class='num'><span class="l-fr">259</span><span class="l-en">259</span> W</td><td class='num'><span class="l-fr">5,4</span><span class="l-en">5.4</span> A</td><td class='num'><span class="l-fr">2 190</span><span class="l-en">2 190</span></td><td class='num'><span class="l-fr">82</span><span class="l-en">82</span> m/s</td><td class='num'><span class="l-fr">0,701</span><span class="l-en">0.701</span></td><td class='num'><span class="l-fr">0,894</span><span class="l-en">0.894</span></td></tr><tr class='hi'><td class='num'><span class="l-fr">50</span><span class="l-en">50</span> %</td><td class='num'><span class="l-fr">3 231</span><span class="l-en">3 231</span> g</td><td class='num'><span class="l-fr">288</span><span class="l-en">288</span> W</td><td class='num'><span class="l-fr">6,0</span><span class="l-en">6.0</span> A</td><td class='num'><span class="l-fr">2 268</span><span class="l-en">2 268</span></td><td class='num'><span class="l-fr">84</span><span class="l-en">84</span> m/s</td><td class='num'><span class="l-fr">0,705</span><span class="l-en">0.705</span></td><td class='num'><span class="l-fr">0,891</span><span class="l-en">0.891</span></td></tr><tr><td class='num'><span class="l-fr">52</span><span class="l-en">52</span> %</td><td class='num'><span class="l-fr">3 370</span><span class="l-en">3 370</span> g</td><td class='num'><span class="l-fr">322</span><span class="l-en">322</span> W</td><td class='num'><span class="l-fr">6,7</span><span class="l-en">6.7</span> A</td><td class='num'><span class="l-fr">2 339</span><span class="l-en">2 339</span></td><td class='num'><span class="l-fr">87</span><span class="l-en">87</span> m/s</td><td class='num'><span class="l-fr">0,678</span><span class="l-en">0.678</span></td><td class='num'><span class="l-fr">0,882</span><span class="l-en">0.882</span></td></tr><tr><td class='num'><span class="l-fr">60</span><span class="l-en">60</span> %</td><td class='num'><span class="l-fr">4 201</span><span class="l-en">4 201</span> g</td><td class='num'><span class="l-fr">427</span><span class="l-en">427</span> W</td><td class='num'><span class="l-fr">8,9</span><span class="l-en">8.9</span> A</td><td class='num'><span class="l-fr">2 581</span><span class="l-en">2 581</span></td><td class='num'><span class="l-fr">96</span><span class="l-en">96</span> m/s</td><td class='num'><span class="l-fr">0,735</span><span class="l-en">0.735</span></td><td class='num'><span class="l-fr">0,855</span><span class="l-en">0.855</span></td></tr><tr><td class='num'><span class="l-fr">70</span><span class="l-en">70</span> %</td><td class='num'><span class="l-fr">5 153</span><span class="l-en">5 153</span> g</td><td class='num'><span class="l-fr">586</span><span class="l-en">586</span> W</td><td class='num'><span class="l-fr">12,2</span><span class="l-en">12.2</span> A</td><td class='num'><span class="l-fr">2 858</span><span class="l-en">2 858</span></td><td class='num'><span class="l-fr">106</span><span class="l-en">106</span> m/s</td><td class='num'><span class="l-fr">0,760</span><span class="l-en">0.760</span></td><td class='num'><span class="l-fr">0,817</span><span class="l-en">0.817</span></td></tr><tr><td class='num'><span class="l-fr">80</span><span class="l-en">80</span> %</td><td class='num'><span class="l-fr">6 171</span><span class="l-en">6 171</span> g</td><td class='num'><span class="l-fr">778</span><span class="l-en">778</span> W</td><td class='num'><span class="l-fr">16,2</span><span class="l-en">16.2</span> A</td><td class='num'><span class="l-fr">3 122</span><span class="l-en">3 122</span></td><td class='num'><span class="l-fr">116</span><span class="l-en">116</span> m/s</td><td class='num'><span class="l-fr">0,781</span><span class="l-en">0.781</span></td><td class='num'><span class="l-fr">0,786</span><span class="l-en">0.786</span></td></tr><tr><td class='num'><span class="l-fr">90</span><span class="l-en">90</span> %</td><td class='num'><span class="l-fr">7 329</span><span class="l-en">7 329</span> g</td><td class='num'><span class="l-fr">1 027</span><span class="l-en">1 027</span> W</td><td class='num'><span class="l-fr">21,4</span><span class="l-en">21.4</span> A</td><td class='num'><span class="l-fr">3 379</span><span class="l-en">3 379</span></td><td class='num'><span class="l-fr">126</span><span class="l-en">126</span> m/s</td><td class='num'><span class="l-fr">0,790</span><span class="l-en">0.790</span></td><td class='num'><span class="l-fr">0,761</span><span class="l-en">0.761</span></td></tr><tr><td class='num'><span class="l-fr">100</span><span class="l-en">100</span> %</td><td class='num'><span class="l-fr">8 716</span><span class="l-en">8 716</span> g</td><td class='num'><span class="l-fr">1 406</span><span class="l-en">1 406</span> W</td><td class='num'><span class="l-fr">29,3</span><span class="l-en">29.3</span> A</td><td class='num'><span class="l-fr">3 709</span><span class="l-en">3 709</span></td><td class='num'><span class="l-fr">138</span><span class="l-en">138</span> m/s</td><td class='num'><span class="l-fr">0,755</span><span class="l-en">0.755</span></td><td class='num'><span class="l-fr">0,754</span><span class="l-en">0.754</span></td></tr></tbody></table></div>
+<div class="grid2" style="margin-top:26px">
+<div><h5><span class="l-fr">Point de vol stationnaire</span><span class="l-en">Hover operating point</span></h5>
+<table class="small"><tbody>
+<tr><td><span class="l-fr">Poussée par rotor</span><span class="l-en">Thrust per rotor</span></td>
+<td class="num val"><span class="l-fr">3 200</span><span class="l-en">3 200</span> g</td></tr>
+<tr><td><span class="l-fr">Manette</span><span class="l-en">Throttle</span></td>
+<td class="num val"><span class="l-fr">49,7</span><span class="l-en">49.7</span> %</td></tr>
+<tr><td><span class="l-fr">Puissance par rotor</span><span class="l-en">Power per rotor</span></td>
+<td class="num val"><span class="l-fr">284</span><span class="l-en">284</span> W</td></tr>
+<tr><td><span class="l-fr">Régime</span><span class="l-en">Speed</span></td><td class="num val"><span class="l-fr">2 257</span><span class="l-en">2 257</span> tr/min</td></tr>
+<tr><td><span class="l-fr">Vitesse en bout de pale</span><span class="l-en">Blade tip speed</span></td>
+<td class="num val"><span class="l-fr">84</span><span class="l-en">84</span> m/s · Mach <span class="l-fr">0,25</span><span class="l-en">0.25</span></td></tr>
+<tr><td><span class="l-fr">Fréquence de passage de pale</span><span class="l-en">Blade passage frequency</span></td>
+<td class="num val"><span class="l-fr">75</span><span class="l-en">75</span> Hz</td></tr>
+</tbody></table></div>
+<div><h5><span class="l-fr">Contre-vérification indépendante</span><span class="l-en">Independent cross-check</span></h5>
+<p class="small muted"><span class="l-fr">La puissance de vol stationnaire a été recalculée par la théorie du disque actuateur, sans utiliser le banc : 1 797 W contre 1 704 W mesurés, soit 5,2 % d'écart. Deux méthodes indépendantes qui convergent sont une garantie que ni l'une ni l'autre ne cache une erreur grossière.</span><span class="l-en">Hover power was recomputed from actuator disk theory, without using the bench: 1 797 W against 1 704 W measured, a 5.2 % gap. Two independent methods that agree are assurance that neither hides a gross error.</span></p>
+</div></div>
+</div></section>
+
+<section id="masse"><div class="wrap">
+<div class="sh"><span class="sn">06</span><h2><span class="l-fr">Budget de masse</span><span class="l-en">Mass budget</span></h2></div>
+<p class="sub"><span class="l-fr">Chaque ligne porte l'origine de sa valeur. Le total est calculé, jamais saisi — c'est ce qui évite qu'un budget cesse discrètement de correspondre à la somme de ses lignes.</span><span class="l-en">Every line carries the origin of its value. The total is computed, never typed — which is what stops a budget from quietly ceasing to match the sum of its own lines.</span></p>
+<div class="tblwrap"><table><thead><tr>
+<th><span class="l-fr">Poste</span><span class="l-en">Item</span></th><th><span class="l-fr">Provenance</span><span class="l-en">Provenance</span></th>
+<th class="num"><span class="l-fr">Masse</span><span class="l-en">Mass</span></th><th class="num"><span class="l-fr">Part</span><span class="l-en">Share</span></th>
+</tr></thead><tbody><tr class='grp'><td colspan='2'><b><span class="l-fr">Structure</span><span class="l-en">Airframe</span></b></td><td class='num'><b><span class="l-fr">2 724</span><span class="l-en">2 724</span> g</b></td><td class='num small muted'><span class="l-fr">14,5</span><span class="l-en">14.5</span> %</td></tr><tr><td class='ind'><span class="l-fr">Plaques centrales carbone, découpe CNC 5 mm</span><span class="l-en">Central carbon plates, 5 mm CNC cut</span></td><td><span class='prov p-estimate'><span class="l-fr">estimé</span><span class="l-en">estimated</span></span></td><td class='num'><span class="l-fr">410</span><span class="l-en">410</span> g</td><td class='num small muted'><span class="l-fr">2,2</span><span class="l-en">2.2</span> %</td></tr><tr><td class='ind'>6× <span class="l-fr">Bras tubulaires carbone 28 × 28 mm, L = 747 mm</span><span class="l-en">Carbon tube arms 28 × 28 mm, L = 747 mm</span></td><td><span class='prov p-measured'><span class="l-fr">mesuré</span><span class="l-en">measured</span></span></td><td class='num'><span class="l-fr">1 444</span><span class="l-en">1 444</span> g</td><td class='num small muted'><span class="l-fr">7,7</span><span class="l-en">7.7</span> %</td></tr><tr><td class='ind'>12× <span class="l-fr">Ferrures bras / platine, fibre continue</span><span class="l-en">Arm-to-plate fittings, continuous fibre</span></td><td><span class='prov p-estimate'><span class="l-fr">estimé</span><span class="l-en">estimated</span></span></td><td class='num'><span class="l-fr">540</span><span class="l-en">540</span> g</td><td class='num small muted'><span class="l-fr">2,9</span><span class="l-en">2.9</span> %</td></tr><tr><td class='ind'><span class="l-fr">Train d&#x27;atterrissage et amortisseurs TPU</span><span class="l-en">Landing gear and TPU dampers</span></td><td><span class='prov p-estimate'><span class="l-fr">estimé</span><span class="l-en">estimated</span></span></td><td class='num'><span class="l-fr">180</span><span class="l-en">180</span> g</td><td class='num small muted'><span class="l-fr">1,0</span><span class="l-en">1.0</span> %</td></tr><tr><td class='ind'><span class="l-fr">Visserie, silentblocs, gaines</span><span class="l-en">Fasteners, vibration mounts, conduits</span></td><td><span class='prov p-estimate'><span class="l-fr">estimé</span><span class="l-en">estimated</span></span></td><td class='num'><span class="l-fr">150</span><span class="l-en">150</span> g</td><td class='num small muted'><span class="l-fr">0,8</span><span class="l-en">0.8</span> %</td></tr><tr class='grp'><td colspan='2'><b><span class="l-fr">Propulsion</span><span class="l-en">Propulsion</span></b></td><td class='num'><b><span class="l-fr">3 096</span><span class="l-en">3 096</span> g</b></td><td class='num small muted'><span class="l-fr">16,5</span><span class="l-en">16.5</span> %</td></tr><tr><td class='ind'>6× <span class="l-fr">Moteurs T-Motor U8 Lite KV100</span><span class="l-en">T-Motor U8 Lite KV100 motors</span></td><td><span class='prov p-datasheet'><span class="l-fr">fiche technique</span><span class="l-en">datasheet</span></span></td><td class='num'><span class="l-fr">1 428</span><span class="l-en">1 428</span> g</td><td class='num small muted'><span class="l-fr">7,6</span><span class="l-en">7.6</span> %</td></tr><tr><td class='ind'>6× <span class="l-fr">Contrôleurs T-Motor ALPHA 60 A 12S FOC</span><span class="l-en">T-Motor ALPHA 60 A 12S FOC speed controllers</span></td><td><span class='prov p-datasheet'><span class="l-fr">fiche technique</span><span class="l-en">datasheet</span></span></td><td class='num'><span class="l-fr">438</span><span class="l-en">438</span> g</td><td class='num small muted'><span class="l-fr">2,3</span><span class="l-en">2.3</span> %</td></tr><tr><td class='ind'>6× <span class="l-fr">Hélices carbone pliables 28 pouces</span><span class="l-en">Folding carbon propellers, 28 inch</span></td><td><span class='prov p-estimate'><span class="l-fr">estimé</span><span class="l-en">estimated</span></span></td><td class='num'><span class="l-fr">900</span><span class="l-en">900</span> g</td><td class='num small muted'><span class="l-fr">4,8</span><span class="l-en">4.8</span> %</td></tr><tr><td class='ind'>6× <span class="l-fr">Montures moteur fixes, interface remplaçable</span><span class="l-en">Fixed motor mounts, replaceable interface</span></td><td><span class='prov p-estimate'><span class="l-fr">estimé</span><span class="l-en">estimated</span></span></td><td class='num'><span class="l-fr">330</span><span class="l-en">330</span> g</td><td class='num small muted'><span class="l-fr">1,8</span><span class="l-en">1.8</span> %</td></tr><tr class='grp'><td colspan='2'><b><span class="l-fr">Énergie</span><span class="l-en">Energy</span></b></td><td class='num'><b><span class="l-fr">7 860</span><span class="l-en">7 860</span> g</b></td><td class='num small muted'><span class="l-fr">41,9</span><span class="l-en">41.9</span> %</td></tr><tr><td class='ind'>96× <span class="l-fr">Cellules Samsung INR21700-50S (12S8P)</span><span class="l-en">Samsung INR21700-50S cells (12S8P)</span></td><td><span class='prov p-datasheet'><span class="l-fr">fiche technique</span><span class="l-en">datasheet</span></span></td><td class='num'><span class="l-fr">6 912</span><span class="l-en">6 912</span> g</td><td class='num small muted'><span class="l-fr">36,8</span><span class="l-en">36.8</span> %</td></tr><tr><td class='ind'><span class="l-fr">BMS, nickel, câblage principal, connecteurs</span><span class="l-en">BMS, nickel, main wiring, connectors</span></td><td><span class='prov p-estimate'><span class="l-fr">estimé</span><span class="l-en">estimated</span></span></td><td class='num'><span class="l-fr">948</span><span class="l-en">948</span> g</td><td class='num small muted'><span class="l-fr">5,1</span><span class="l-en">5.1</span> %</td></tr><tr class='grp'><td colspan='2'><b><span class="l-fr">Avionique</span><span class="l-en">Avionics</span></b></td><td class='num'><b><span class="l-fr">430</span><span class="l-en">430</span> g</b></td><td class='num small muted'><span class="l-fr">2,3</span><span class="l-en">2.3</span> %</td></tr><tr><td class='ind'><span class="l-fr">Contrôleur de vol Cube Orange+</span><span class="l-en">Cube Orange+ flight controller</span></td><td><span class='prov p-datasheet'><span class="l-fr">fiche technique</span><span class="l-en">datasheet</span></span></td><td class='num'><span class="l-fr">100</span><span class="l-en">100</span> g</td><td class='num small muted'><span class="l-fr">0,5</span><span class="l-en">0.5</span> %</td></tr><tr><td class='ind'><span class="l-fr">Calculateur NVIDIA Jetson Orin NX 16 Go et carte porteuse</span><span class="l-en">NVIDIA Jetson Orin NX 16 GB computer and carrier board</span></td><td><span class='prov p-datasheet'><span class="l-fr">fiche technique</span><span class="l-en">datasheet</span></span></td><td class='num'><span class="l-fr">250</span><span class="l-en">250</span> g</td><td class='num small muted'><span class="l-fr">1,3</span><span class="l-en">1.3</span> %</td></tr><tr><td class='ind'><span class="l-fr">GPS RTK Holybro H-RTK F9P</span><span class="l-en">Holybro H-RTK F9P RTK GPS</span></td><td><span class='prov p-datasheet'><span class="l-fr">fiche technique</span><span class="l-en">datasheet</span></span></td><td class='num'><span class="l-fr">80</span><span class="l-en">80</span> g</td><td class='num small muted'><span class="l-fr">0,4</span><span class="l-en">0.4</span> %</td></tr><tr class='grp'><td colspan='2'><b><span class="l-fr">Capteurs</span><span class="l-en">Sensors</span></b></td><td class='num'><b><span class="l-fr">420</span><span class="l-en">420</span> g</b></td><td class='num small muted'><span class="l-fr">2,2</span><span class="l-en">2.2</span> %</td></tr><tr><td class='ind'><span class="l-fr">Altimètre LiDAR Benewake TFmini Plus</span><span class="l-en">Benewake TFmini Plus LiDAR altimeter</span></td><td><span class='prov p-datasheet'><span class="l-fr">fiche technique</span><span class="l-en">datasheet</span></span></td><td class='num'><span class="l-fr">50</span><span class="l-en">50</span> g</td><td class='num small muted'><span class="l-fr">0,3</span><span class="l-en">0.3</span> %</td></tr><tr><td class='ind'><span class="l-fr">Caméra thermique FLIR Boson 320</span><span class="l-en">FLIR Boson 320 thermal camera</span></td><td><span class='prov p-datasheet'><span class="l-fr">fiche technique</span><span class="l-en">datasheet</span></span></td><td class='num'><span class="l-fr">180</span><span class="l-en">180</span> g</td><td class='num small muted'><span class="l-fr">1,0</span><span class="l-en">1.0</span> %</td></tr><tr><td class='ind'><span class="l-fr">Radar millimétrique TI IWR6843</span><span class="l-en">TI IWR6843 mmWave radar</span></td><td><span class='prov p-datasheet'><span class="l-fr">fiche technique</span><span class="l-en">datasheet</span></span></td><td class='num'><span class="l-fr">100</span><span class="l-en">100</span> g</td><td class='num small muted'><span class="l-fr">0,5</span><span class="l-en">0.5</span> %</td></tr><tr><td class='ind'><span class="l-fr">Caméra RGB 1080p et optique</span><span class="l-en">1080p RGB camera and optics</span></td><td><span class='prov p-estimate'><span class="l-fr">estimé</span><span class="l-en">estimated</span></span></td><td class='num'><span class="l-fr">90</span><span class="l-en">90</span> g</td><td class='num small muted'><span class="l-fr">0,5</span><span class="l-en">0.5</span> %</td></tr><tr class='grp'><td colspan='2'><b><span class="l-fr">Communication</span><span class="l-en">Communications</span></b></td><td class='num'><b><span class="l-fr">200</span><span class="l-en">200</span> g</b></td><td class='num small muted'><span class="l-fr">1,1</span><span class="l-en">1.1</span> %</td></tr><tr><td class='ind'><span class="l-fr">Modem LTE/5G Quectel et antennes</span><span class="l-en">Quectel LTE/5G modem and antennas</span></td><td><span class='prov p-datasheet'><span class="l-fr">fiche technique</span><span class="l-en">datasheet</span></span></td><td class='num'><span class="l-fr">120</span><span class="l-en">120</span> g</td><td class='num small muted'><span class="l-fr">0,6</span><span class="l-en">0.6</span> %</td></tr><tr><td class='ind'><span class="l-fr">Récepteur ELRS 900 MHz</span><span class="l-en">ELRS 900 MHz receiver</span></td><td><span class='prov p-datasheet'><span class="l-fr">fiche technique</span><span class="l-en">datasheet</span></span></td><td class='num'><span class="l-fr">30</span><span class="l-en">30</span> g</td><td class='num small muted'><span class="l-fr">0,2</span><span class="l-en">0.2</span> %</td></tr><tr><td class='ind'><span class="l-fr">Télémétrie MAVLink SiK 915 MHz</span><span class="l-en">MAVLink SiK 915 MHz telemetry</span></td><td><span class='prov p-datasheet'><span class="l-fr">fiche technique</span><span class="l-en">datasheet</span></span></td><td class='num'><span class="l-fr">50</span><span class="l-en">50</span> g</td><td class='num small muted'><span class="l-fr">0,3</span><span class="l-en">0.3</span> %</td></tr><tr class='grp'><td colspan='2'><b><span class="l-fr">Treuil</span><span class="l-en">Winch</span></b></td><td class='num'><b><span class="l-fr">685</span><span class="l-en">685</span> g</b></td><td class='num small muted'><span class="l-fr">3,6</span><span class="l-en">3.6</span> %</td></tr><tr><td class='ind'><span class="l-fr">Moteur, réducteur cycloïdal 30:1 et tambour</span><span class="l-en">Motor, 30:1 cycloidal reducer and drum</span></td><td><span class='prov p-estimate'><span class="l-fr">estimé</span><span class="l-en">estimated</span></span></td><td class='num'><span class="l-fr">520</span><span class="l-en">520</span> g</td><td class='num small muted'><span class="l-fr">2,8</span><span class="l-en">2.8</span> %</td></tr><tr><td class='ind'><span class="l-fr">Frein à manque de courant</span><span class="l-en">Fail-safe brake</span></td><td><span class='prov p-estimate'><span class="l-fr">estimé</span><span class="l-en">estimated</span></span></td><td class='num'><span class="l-fr">60</span><span class="l-en">60</span> g</td><td class='num small muted'><span class="l-fr">0,3</span><span class="l-en">0.3</span> %</td></tr><tr><td class='ind'><span class="l-fr">Câble Dyneema SK99 10 m et terminaisons</span><span class="l-en">Dyneema SK99 cable, 10 m, and terminations</span></td><td><span class='prov p-datasheet'><span class="l-fr">fiche technique</span><span class="l-en">datasheet</span></span></td><td class='num'><span class="l-fr">25</span><span class="l-en">25</span> g</td><td class='num small muted'><span class="l-fr">0,1</span><span class="l-en">0.1</span> %</td></tr><tr><td class='ind'><span class="l-fr">Électronique de treuil et codeur AS5048A</span><span class="l-en">Winch electronics and AS5048A encoder</span></td><td><span class='prov p-estimate'><span class="l-fr">estimé</span><span class="l-en">estimated</span></span></td><td class='num'><span class="l-fr">80</span><span class="l-en">80</span> g</td><td class='num small muted'><span class="l-fr">0,4</span><span class="l-en">0.4</span> %</td></tr><tr class='grp'><td colspan='2'><b><span class="l-fr">Sécurité</span><span class="l-en">Safety</span></b></td><td class='num'><b><span class="l-fr">355</span><span class="l-en">355</span> g</b></td><td class='num small muted'><span class="l-fr">1,9</span><span class="l-en">1.9</span> %</td></tr><tr><td class='ind'><span class="l-fr">Parachute autonome ParaZero SafeAir</span><span class="l-en">ParaZero SafeAir autonomous parachute</span></td><td><span class='prov p-datasheet'><span class="l-fr">fiche technique</span><span class="l-en">datasheet</span></span></td><td class='num'><span class="l-fr">250</span><span class="l-en">250</span> g</td><td class='num small muted'><span class="l-fr">1,3</span><span class="l-en">1.3</span> %</td></tr><tr><td class='ind'><span class="l-fr">Feux de position, anticollision et avertisseur</span><span class="l-en">Position lights, anti-collision and buzzer</span></td><td><span class='prov p-estimate'><span class="l-fr">estimé</span><span class="l-en">estimated</span></span></td><td class='num'><span class="l-fr">80</span><span class="l-en">80</span> g</td><td class='num small muted'><span class="l-fr">0,4</span><span class="l-en">0.4</span> %</td></tr><tr><td class='ind'><span class="l-fr">Récepteur ADS-B (réception seule)</span><span class="l-en">ADS-B receiver (receive only)</span></td><td><span class='prov p-estimate'><span class="l-fr">estimé</span><span class="l-en">estimated</span></span></td><td class='num'><span class="l-fr">25</span><span class="l-en">25</span> g</td><td class='num small muted'><span class="l-fr">0,1</span><span class="l-en">0.1</span> %</td></tr><tr class='grp'><td colspan='2'><b><span class="l-fr">Charge utile</span><span class="l-en">Payload</span></b></td><td class='num'><b><span class="l-fr">3 000</span><span class="l-en">3 000</span> g</b></td><td class='num small muted'><span class="l-fr">16,0</span><span class="l-en">16.0</span> %</td></tr><tr><td class='ind'><span class="l-fr">Module de survie médical</span><span class="l-en">Medical survival module</span></td><td><span class='prov p-assumed'><span class="l-fr">choix de conception</span><span class="l-en">design choice</span></span></td><td class='num'><span class="l-fr">3 000</span><span class="l-en">3 000</span> g</td><td class='num small muted'><span class="l-fr">16,0</span><span class="l-en">16.0</span> %</td></tr><tr class='grp'><td colspan='2'><span class="l-fr">Marge de conception sur les postes estimés</span><span class="l-en">Design margin on estimated items</span> (<span class="l-fr">10</span><span class="l-en">10</span> %)</td><td class='num'><span class="l-fr">431</span><span class="l-en">431</span> g</td><td></td></tr><tr class='tot'><td colspan='2'><b><span class="l-fr">MASSE AU DÉCOLLAGE</span><span class="l-en">ALL-UP WEIGHT</span></b></td><td class='num'><b><span class="l-fr">19 202</span><span class="l-en">19 202</span> g</b></td><td></td></tr></tbody></table></div>
+</div></section>
+
+<section id="energie"><div class="wrap">
+<div class="sh"><span class="sn">07</span><h2><span class="l-fr">Énergie et mission</span><span class="l-en">Energy and mission</span></h2></div>
+<p class="sub"><span class="l-fr">La réserve n'est pas un pourcentage forfaitaire. La mission de dimensionnement inclut directement le retour face à 8 m/s de vent, sur une batterie en fin de vie et sans jamais descendre sous 20 % de charge. La « réserve » est donc la capacité de rentrer, vérifiable à chaque instant du vol.</span><span class="l-en">Reserve is not a flat percentage. The sizing mission directly includes the return leg against 8 m/s of wind, on an end-of-life battery and never going below 20 % state of charge. The “reserve” is therefore the ability to get home, verifiable at any instant of the flight.</span></p>
+<div class="tblwrap"><table><thead><tr>
+<th><span class="l-fr">Phase</span><span class="l-en">Phase</span></th><th class="num"><span class="l-fr">Durée</span><span class="l-en">Duration</span></th>
+<th class="num"><span class="l-fr">Masse</span><span class="l-en">Mass</span></th><th class="num"><span class="l-fr">Puissance</span><span class="l-en">Power</span></th>
+<th class="num"><span class="l-fr">Énergie</span><span class="l-en">Energy</span></th>
+</tr></thead><tbody><tr><td><span class="l-fr">Décollage et montée</span><span class="l-en">Take-off and climb</span></td><td class='num'><span class="l-fr">2,0</span><span class="l-en">2.0</span> min</td><td class='num'><span class="l-fr">19,20</span><span class="l-en">19.20</span> kg</td><td class='num'><span class="l-fr">2 216</span><span class="l-en">2 216</span> W</td><td class='num val'><span class="l-fr">73,9</span><span class="l-en">73.9</span> Wh</td></tr><tr><td><span class="l-fr">Croisière aller</span><span class="l-en">Outbound cruise</span></td><td class='num'><span class="l-fr">8,9</span><span class="l-en">8.9</span> min</td><td class='num'><span class="l-fr">19,20</span><span class="l-en">19.20</span> kg</td><td class='num'><span class="l-fr">1 514</span><span class="l-en">1 514</span> W</td><td class='num val'><span class="l-fr">224,3</span><span class="l-en">224.3</span> Wh</td></tr><tr><td><span class="l-fr">Stationnaire sur site et treuillage</span><span class="l-en">On-site hover and winching</span></td><td class='num'><span class="l-fr">8,0</span><span class="l-en">8.0</span> min</td><td class='num'><span class="l-fr">19,20</span><span class="l-en">19.20</span> kg</td><td class='num'><span class="l-fr">1 856</span><span class="l-en">1 856</span> W</td><td class='num val'><span class="l-fr">247,5</span><span class="l-en">247.5</span> Wh</td></tr><tr><td><span class="l-fr">Croisière retour, vent de face 8 m/s, à vide</span><span class="l-en">Return cruise, 8 m/s headwind, empty</span></td><td class='num'><span class="l-fr">19,0</span><span class="l-en">19.0</span> min</td><td class='num'><span class="l-fr">16,20</span><span class="l-en">16.20</span> kg</td><td class='num'><span class="l-fr">1 261</span><span class="l-en">1 261</span> W</td><td class='num val'><span class="l-fr">400,3</span><span class="l-en">400.3</span> Wh</td></tr><tr><td><span class="l-fr">Atterrissage</span><span class="l-en">Landing</span></td><td class='num'><span class="l-fr">1,0</span><span class="l-en">1.0</span> min</td><td class='num'><span class="l-fr">16,20</span><span class="l-en">16.20</span> kg</td><td class='num'><span class="l-fr">1 243</span><span class="l-en">1 243</span> W</td><td class='num val'><span class="l-fr">20,7</span><span class="l-en">20.7</span> Wh</td></tr>
+<tr class="tot"><td><b><span class="l-fr">Total mission</span><span class="l-en">Mission total</span></b></td>
+<td class="num"><b><span class="l-fr">39</span><span class="l-en">39</span> min</b></td><td></td><td></td>
+<td class="num"><b><span class="l-fr">967</span><span class="l-en">967</span> Wh</b></td></tr>
+</tbody></table></div>
+<div class="grid2" style="margin-top:26px">
+<div><h5><span class="l-fr">Batterie</span><span class="l-en">Battery</span></h5>
+<table class="small"><tbody>
+<tr><td><span class="l-fr">Configuration</span><span class="l-en">Configuration</span></td>
+<td class="num val">12S8P — 96 <span class="l-fr">cellules</span><span class="l-en">cells</span></td></tr>
+<tr><td><span class="l-fr">Capacité nominale</span><span class="l-en">Nameplate capacity</span></td>
+<td class="num"><span class="l-fr">1 728</span><span class="l-en">1 728</span> Wh</td></tr>
+<tr><td><span class="l-fr">Plancher de charge à</span><span class="l-en">Charge floor at</span>
+ <span class="l-fr">20</span><span class="l-en">20</span> %</td>
+<td class="num muted">× <span class="l-fr">0,80</span><span class="l-en">0.80</span></td></tr>
+<tr><td><span class="l-fr">Affaissement sous courant</span><span class="l-en">Sag under load</span></td>
+<td class="num muted">× <span class="l-fr">0,95</span><span class="l-en">0.95</span></td></tr>
+<tr><td><span class="l-fr">Pack en fin de vie</span><span class="l-en">End-of-life pack</span></td>
+<td class="num muted">× <span class="l-fr">0,85</span><span class="l-en">0.85</span></td></tr>
+<tr class="tot"><td><b><span class="l-fr">Énergie réellement utilisable</span><span class="l-en">Actually usable energy</span></b></td>
+<td class="num val"><span class="l-fr">1 116</span><span class="l-en">1 116</span> Wh</td></tr>
+<tr><td><span class="l-fr">Marge sur la mission</span><span class="l-en">Margin on the mission</span></td>
+<td class="num val ok">+<span class="l-fr">150</span><span class="l-en">150</span> Wh · <span class="l-fr">13</span><span class="l-en">13</span> %</td></tr>
+</tbody></table></div>
+<div><h5><span class="l-fr">Sensibilité du point de conception</span><span class="l-en">Design point sensitivity</span></h5>
+<p class="small muted"><span class="l-fr">Un dimensionnement n'est défendable que si l'on sait quelles hypothèses le portent. Les quatre premières lignes sont des choix d'exploitation, pas des propriétés physiques : elles se négocient.</span><span class="l-en">A sizing is only defensible if you know which assumptions carry it. The first four rows are operational choices, not physical properties: they are negotiable.</span></p>
+<table class="small"><tbody><tr><td><span class="l-fr">Vent de face au retour ramené à 5 m/s</span><span class="l-en">Return headwind reduced to 5 m/s</span></td><td class='num val'><span class="l-fr">10</span><span class="l-en">10</span> km</td><td class='num ok'>+<span class="l-fr">2</span><span class="l-en">2</span> km</td></tr><tr><td><span class="l-fr">Vent de face au retour porté à 11 m/s</span><span class="l-en">Return headwind raised to 11 m/s</span></td><td class='num val'><span class="l-fr">5</span><span class="l-en">5</span> km</td><td class='num danger'>−<span class="l-fr">3</span><span class="l-en">3</span> km</td></tr><tr><td><span class="l-fr">Pack neuf au lieu de fin de vie</span><span class="l-en">New pack instead of end-of-life</span></td><td class='num val'><span class="l-fr">11</span><span class="l-en">11</span> km</td><td class='num ok'>+<span class="l-fr">3</span><span class="l-en">3</span> km</td></tr><tr><td><span class="l-fr">Plancher de charge abaissé à 10 %</span><span class="l-en">State-of-charge floor lowered to 10%</span></td><td class='num val'><span class="l-fr">10</span><span class="l-en">10</span> km</td><td class='num ok'>+<span class="l-fr">2</span><span class="l-en">2</span> km</td></tr><tr><td><span class="l-fr">Durée sur site ramenée à 5 min</span><span class="l-en">On-site time reduced to 5 min</span></td><td class='num val'><span class="l-fr">9</span><span class="l-en">9</span> km</td><td class='num ok'>+<span class="l-fr">1</span><span class="l-en">1</span> km</td></tr><tr><td><span class="l-fr">Durée sur site portée à 12 min</span><span class="l-en">On-site time raised to 12 min</span></td><td class='num val'><span class="l-fr">7</span><span class="l-en">7</span> km</td><td class='num danger'>−<span class="l-fr">1</span><span class="l-en">1</span> km</td></tr><tr><td><span class="l-fr">Charge utile ramenée à 2,0 kg</span><span class="l-en">Payload reduced to 2.0 kg</span></td><td class='num val'><span class="l-fr">10</span><span class="l-en">10</span> km</td><td class='num ok'>+<span class="l-fr">2</span><span class="l-en">2</span> km</td></tr><tr><td><span class="l-fr">Charge utile portée à 4,0 kg</span><span class="l-en">Payload raised to 4.0 kg</span></td><td class='num val'><span class="l-fr">7</span><span class="l-en">7</span> km</td><td class='num danger'>−<span class="l-fr">1</span><span class="l-en">1</span> km</td></tr></tbody></table></div>
+</div>
+<h5 style="margin-top:34px"><span class="l-fr">Puissance en croisière</span><span class="l-en">Cruise power</span></h5>
+<p class="small muted" style="max-width:74ch"><span class="l-fr">En translation, la puissance induite chute grâce à la portance de translation, mais la puissance parasite croît comme le cube de la vitesse. Les deux se croisent vers 17,2 m/s, qui est la vitesse de meilleure portée. La vitesse retenue de 15 m/s en est très proche.</span><span class="l-en">In forward flight, induced power drops thanks to translational lift, while parasite power grows as the cube of speed. The two cross near 17.2 m/s, which is the best-range speed. The retained 15 m/s is very close to it.</span></p>
+<div class="tblwrap"><table><thead><tr>
+<th class="num"><span class="l-fr">Vitesse</span><span class="l-en">Airspeed</span></th><th class="num"><span class="l-fr">Induite</span><span class="l-en">Induced</span></th>
+<th class="num"><span class="l-fr">Profil</span><span class="l-en">Profile</span></th><th class="num"><span class="l-fr">Parasite</span><span class="l-en">Parasite</span></th>
+<th class="num"><span class="l-fr">Total</span><span class="l-en">Total</span></th><th class="num">Wh/km</th>
+</tr></thead><tbody><tr><td class='num'><span class="l-fr">8</span><span class="l-en">8</span> m/s</td><td class='num'><span class="l-fr">683</span><span class="l-en">683</span> W</td><td class='num'><span class="l-fr">459</span><span class="l-en">459</span> W</td><td class='num'><span class="l-fr">56</span><span class="l-en">56</span> W</td><td class='num val'><span class="l-fr">1 468</span><span class="l-en">1 468</span> W</td><td class='num'><span class="l-fr">51,0</span><span class="l-en">51.0</span></td></tr><tr><td class='num'><span class="l-fr">10</span><span class="l-en">10</span> m/s</td><td class='num'><span class="l-fr">574</span><span class="l-en">574</span> W</td><td class='num'><span class="l-fr">459</span><span class="l-en">459</span> W</td><td class='num'><span class="l-fr">110</span><span class="l-en">110</span> W</td><td class='num val'><span class="l-fr">1 404</span><span class="l-en">1 404</span> W</td><td class='num'><span class="l-fr">39,0</span><span class="l-en">39.0</span></td></tr><tr><td class='num'><span class="l-fr">12</span><span class="l-en">12</span> m/s</td><td class='num'><span class="l-fr">490</span><span class="l-en">490</span> W</td><td class='num'><span class="l-fr">461</span><span class="l-en">461</span> W</td><td class='num'><span class="l-fr">191</span><span class="l-en">191</span> W</td><td class='num val'><span class="l-fr">1 401</span><span class="l-en">1 401</span> W</td><td class='num'><span class="l-fr">32,4</span><span class="l-en">32.4</span></td></tr><tr><td class='num'><span class="l-fr">14</span><span class="l-en">14</span> m/s</td><td class='num'><span class="l-fr">426</span><span class="l-en">426</span> W</td><td class='num'><span class="l-fr">463</span><span class="l-en">463</span> W</td><td class='num'><span class="l-fr">303</span><span class="l-en">303</span> W</td><td class='num val'><span class="l-fr">1 461</span><span class="l-en">1 461</span> W</td><td class='num'><span class="l-fr">29,0</span><span class="l-en">29.0</span></td></tr><tr class='hi'><td class='num'><span class="l-fr">15</span><span class="l-en">15</span> m/s</td><td class='num'><span class="l-fr">401</span><span class="l-en">401</span> W</td><td class='num'><span class="l-fr">464</span><span class="l-en">464</span> W</td><td class='num'><span class="l-fr">372</span><span class="l-en">372</span> W</td><td class='num val'><span class="l-fr">1 514</span><span class="l-en">1 514</span> W</td><td class='num'><span class="l-fr">28,0</span><span class="l-en">28.0</span></td></tr><tr><td class='num'><span class="l-fr">16</span><span class="l-en">16</span> m/s</td><td class='num'><span class="l-fr">378</span><span class="l-en">378</span> W</td><td class='num'><span class="l-fr">466</span><span class="l-en">466</span> W</td><td class='num'><span class="l-fr">452</span><span class="l-en">452</span> W</td><td class='num val'><span class="l-fr">1 584</span><span class="l-en">1 584</span> W</td><td class='num'><span class="l-fr">27,5</span><span class="l-en">27.5</span></td></tr><tr><td class='num'><span class="l-fr">18</span><span class="l-en">18</span> m/s</td><td class='num'><span class="l-fr">342</span><span class="l-en">342</span> W</td><td class='num'><span class="l-fr">471</span><span class="l-en">471</span> W</td><td class='num'><span class="l-fr">643</span><span class="l-en">643</span> W</td><td class='num val'><span class="l-fr">1 771</span><span class="l-en">1 771</span> W</td><td class='num'><span class="l-fr">27,3</span><span class="l-en">27.3</span></td></tr><tr><td class='num'><span class="l-fr">20</span><span class="l-en">20</span> m/s</td><td class='num'><span class="l-fr">314</span><span class="l-en">314</span> W</td><td class='num'><span class="l-fr">477</span><span class="l-en">477</span> W</td><td class='num'><span class="l-fr">882</span><span class="l-en">882</span> W</td><td class='num val'><span class="l-fr">2 027</span><span class="l-en">2 027</span> W</td><td class='num'><span class="l-fr">28,1</span><span class="l-en">28.1</span></td></tr><tr><td class='num'><span class="l-fr">22</span><span class="l-en">22</span> m/s</td><td class='num'><span class="l-fr">292</span><span class="l-en">292</span> W</td><td class='num'><span class="l-fr">486</span><span class="l-en">486</span> W</td><td class='num'><span class="l-fr">1 174</span><span class="l-en">1 174</span> W</td><td class='num val'><span class="l-fr">2 355</span><span class="l-en">2 355</span> W</td><td class='num'><span class="l-fr">29,7</span><span class="l-en">29.7</span></td></tr></tbody></table></div>
+</div></section>
+
+<section id="soussystemes"><div class="wrap">
+<div class="sh"><span class="sn">08</span><h2><span class="l-fr">Sous-systèmes</span><span class="l-en">Subsystems</span></h2></div>
+<div class="grid2">
+<div><h5><span class="l-fr">Treuil</span><span class="l-en">Winch</span></h5>
+<p class="small muted"><span class="l-fr">Réducteur cycloïdal 30:1, choisi au-dessus du seuil d'irréversibilité : en cas de panne électrique le module reste suspendu au lieu de tomber. Un frein à manque de courant double cette sécurité.</span><span class="l-en">A 30:1 cycloidal reducer, chosen above the self-locking threshold: on electrical failure the module stays suspended instead of falling. A fail-safe brake doubles that protection.</span></p>
+<table class="small"><tbody>
+<tr><td><span class="l-fr">Rapport de réduction</span><span class="l-en">Reduction ratio</span></td>
+<td class="num val"><span class="l-fr">30</span><span class="l-en">30</span>:1</td></tr>
+<tr><td><span class="l-fr">Rayon de tambour</span><span class="l-en">Drum radius</span></td>
+<td class="num"><span class="l-fr">25</span><span class="l-en">25</span> mm</td></tr>
+<tr><td><span class="l-fr">Vitesse de descente</span><span class="l-en">Descent speed</span></td>
+<td class="num"><span class="l-fr">0,5</span><span class="l-en">0.5</span> m/s</td></tr>
+<tr><td><span class="l-fr">Régime moteur</span><span class="l-en">Motor speed</span></td>
+<td class="num"><span class="l-fr">5 730</span><span class="l-en">5 730</span> tr/min</td></tr>
+<tr><td><span class="l-fr">Couple moteur</span><span class="l-en">Motor torque</span></td>
+<td class="num"><span class="l-fr">0,082</span><span class="l-en">0.082</span> N·m</td></tr>
+<tr><td><span class="l-fr">Puissance</span><span class="l-en">Power</span></td>
+<td class="num"><span class="l-fr">49</span><span class="l-en">49</span> W</td></tr>
+</tbody></table></div>
+<div><h5><span class="l-fr">Module de survie — sécurité</span><span class="l-en">Survival module — safety</span></h5>
+<p class="small muted"><span class="l-fr">Le module descend à proximité immédiate d'une personne au sol. Il est donc dimensionné sur le cas le plus sévère possible : rupture de câble à la hauteur maximale, soit 10 m et 294 J à 14,0 m/s. Trois protections indépendantes : structure absorbante, frein à manque de courant, zone d'exclusion annoncée au sol.</span><span class="l-en">The module descends in the immediate vicinity of a person on the ground. It is therefore sized on the most severe case possible: cable failure at maximum height, that is 10 m and 294 J at 14.0 m/s. Three independent protections: energy-absorbing structure, fail-safe brake, and an exclusion zone announced on the ground.</span></p>
+</div></div>
+<h5 style="margin-top:30px"><span class="l-fr">Précision de largage sous vent</span><span class="l-en">Release accuracy in wind</span></h5>
+<p class="small muted" style="max-width:74ch"><span class="l-fr">Le module suspendu subit sa propre traînée : il dérive sous le vent quelle que soit l'attitude du drone. C'est ce qui fixe la limite opérationnelle de 6 m/s au largage.</span><span class="l-en">The suspended module experiences its own drag: it drifts downwind whatever the aircraft attitude. This is what sets the 6 m/s operational limit at release.</span></p>
+<div class="tblwrap"><table><thead><tr>
+<th class="num"><span class="l-fr">Vent</span><span class="l-en">Wind</span></th><th class="num"><span class="l-fr">Traînée module</span><span class="l-en">Module drag</span></th>
+<th class="num"><span class="l-fr">Angle du câble</span><span class="l-en">Cable angle</span></th><th class="num"><span class="l-fr">Dérive</span><span class="l-en">Drift</span></th>
+<th><span class="l-fr">Opération</span><span class="l-en">Operation</span></th>
+</tr></thead><tbody><tr><td class='num'><span class="l-fr">0</span><span class="l-en">0</span> m/s</td><td class='num'><span class="l-fr">0,0</span><span class="l-en">0.0</span> N</td><td class='num'><span class="l-fr">0,0</span><span class="l-en">0.0</span>°</td><td class='num val'><span class="l-fr">0,00</span><span class="l-en">0.00</span> m</td><td class='small muted'><span class="l-fr">largage autorisé</span><span class="l-en">release allowed</span></td></tr><tr><td class='num'><span class="l-fr">3</span><span class="l-en">3</span> m/s</td><td class='num'><span class="l-fr">0,3</span><span class="l-en">0.3</span> N</td><td class='num'><span class="l-fr">0,6</span><span class="l-en">0.6</span>°</td><td class='num val'><span class="l-fr">0,10</span><span class="l-en">0.10</span> m</td><td class='small muted'><span class="l-fr">largage autorisé</span><span class="l-en">release allowed</span></td></tr><tr class='hi'><td class='num'><span class="l-fr">6</span><span class="l-en">6</span> m/s</td><td class='num'><span class="l-fr">1,1</span><span class="l-en">1.1</span> N</td><td class='num'><span class="l-fr">2,3</span><span class="l-en">2.3</span>°</td><td class='num val'><span class="l-fr">0,41</span><span class="l-en">0.41</span> m</td><td class='small muted'><span class="l-fr">largage autorisé</span><span class="l-en">release allowed</span></td></tr><tr><td class='num'><span class="l-fr">9</span><span class="l-en">9</span> m/s</td><td class='num'><span class="l-fr">2,5</span><span class="l-en">2.5</span> N</td><td class='num'><span class="l-fr">5,2</span><span class="l-en">5.2</span>°</td><td class='num val'><span class="l-fr">0,92</span><span class="l-en">0.92</span> m</td><td class='small muted'><span class="l-fr">largage interdit</span><span class="l-en">release prohibited</span></td></tr><tr><td class='num'><span class="l-fr">12</span><span class="l-en">12</span> m/s</td><td class='num'><span class="l-fr">4,4</span><span class="l-en">4.4</span> N</td><td class='num'><span class="l-fr">9,2</span><span class="l-en">9.2</span>°</td><td class='num val'><span class="l-fr">1,63</span><span class="l-en">1.63</span> m</td><td class='small muted'><span class="l-fr">largage interdit</span><span class="l-en">release prohibited</span></td></tr></tbody></table></div>
+</div></section>
+
+<section id="verifs"><div class="wrap">
+<div class="sh"><span class="sn">09</span><h2><span class="l-fr">Vérifications</span><span class="l-en">Verifications</span></h2></div>
+<p class="sub"><span class="l-fr">Aucune vérification ne renvoie un simple « conforme ». Chacune donne la valeur obtenue, le seuil, la marge — et déclare ce qu'elle ne couvre pas. Un échec doit être diagnosticable, pas seulement signalé.</span><span class="l-en">No check returns a bare “pass”. Each gives the value obtained, the threshold, the margin — and declares what it does not cover. A failure must be diagnosable, not merely flagged.</span></p>
+<div class="tblwrap"><table><thead><tr>
+<th><span class="l-fr">Repère</span><span class="l-en">Ref</span></th><th><span class="l-fr">Vérification</span><span class="l-en">Check</span></th>
+<th class="num"><span class="l-fr">Obtenu</span><span class="l-en">Actual</span></th><th class="num"><span class="l-fr">Requis</span><span class="l-en">Required</span></th>
+<th><span class="l-fr">Marge</span><span class="l-en">Margin</span></th><th></th>
+</tr></thead><tbody><tr><td class='mono'>GEO-01</td><td><span class="l-fr">Garde entre hélices adjacentes</span><span class="l-en">Clearance between adjacent propellers</span></td><td class='num val'><span class="l-fr">35,6</span><span class="l-en">35.6</span> mm</td><td class='num muted'><span class="l-fr">0</span><span class="l-en">0</span> mm</td><td class='small'><span class="l-fr">entraxe adjacent 747 mm pour un diamètre de 711 mm</span><span class="l-en">adjacent spacing 747 mm for a 711 mm diameter</span></td><td><span class='pill pok'><span class="l-fr">conforme</span><span class="l-en">pass</span></span></td></tr><tr><td class='mono'>PWR-01</td><td><span class="l-fr">Rapport poussée / poids</span><span class="l-en">Thrust-to-weight ratio</span></td><td class='num val'><span class="l-fr">2,72</span><span class="l-en">2.72</span> -</td><td class='num muted'><span class="l-fr">2</span><span class="l-en">2</span> -</td><td class='small'><span class="l-fr">+36 % au-delà du requis</span><span class="l-en">+36 % beyond requirement</span></td><td><span class='pill pok'><span class="l-fr">conforme</span><span class="l-en">pass</span></span></td></tr><tr><td class='mono'>PWR-02</td><td><span class="l-fr">Manette en vol stationnaire</span><span class="l-en">Throttle in hover</span></td><td class='num val'><span class="l-fr">49,7</span><span class="l-en">49.7</span> %</td><td class='num muted'><span class="l-fr">70</span><span class="l-en">70</span> %</td><td class='small'><span class="l-fr">20 points de marge</span><span class="l-en">20 points of margin</span></td><td><span class='pill pok'><span class="l-fr">conforme</span><span class="l-en">pass</span></span></td></tr><tr><td class='mono'>PWR-03</td><td><span class="l-fr">Puissance par moteur en stationnaire</span><span class="l-en">Power per motor in hover</span></td><td class='num val'><span class="l-fr">284</span><span class="l-en">284</span> W</td><td class='num muted'><span class="l-fr">1 406</span><span class="l-en">1 406</span> W</td><td class='small'><span class="l-fr">20 % de la puissance max 180 s</span><span class="l-en">20 % of the 180 s maximum</span></td><td><span class='pill pok'><span class="l-fr">conforme</span><span class="l-en">pass</span></span></td></tr><tr><td class='mono'>PWR-04</td><td><span class="l-fr">Vitesse en bout de pale</span><span class="l-en">Blade tip speed</span></td><td class='num val'><span class="l-fr">0,247</span><span class="l-en">0.247</span> Mach</td><td class='num muted'><span class="l-fr">0,6</span><span class="l-en">0.6</span> Mach</td><td class='small'><span class="l-fr">84 m/s — au-delà de Mach 0,6 une hélice carbone n&#x27;est plus exploitable</span><span class="l-en">84 m/s — beyond Mach 0.6 a carbon propeller is no longer usable</span></td><td><span class='pill pok'><span class="l-fr">conforme</span><span class="l-en">pass</span></span></td></tr><tr><td class='mono'>ENE-01</td><td><span class="l-fr">Énergie de mission</span><span class="l-en">Mission energy</span></td><td class='num val'><span class="l-fr">966,7</span><span class="l-en">966.7</span> Wh</td><td class='num muted'><span class="l-fr">1 027</span><span class="l-en">1 027</span> Wh</td><td class='small'><span class="l-fr">+150 Wh de marge (13 %)</span><span class="l-en">+150 Wh margin (13 %)</span></td><td><span class='pill pok'><span class="l-fr">conforme</span><span class="l-en">pass</span></span></td></tr><tr><td class='mono'>ENE-02</td><td><span class="l-fr">Courant par cellule en stationnaire</span><span class="l-en">Current per cell in hover</span></td><td class='num val'><span class="l-fr">4,4</span><span class="l-en">4.4</span> A</td><td class='num muted'><span class="l-fr">25</span><span class="l-en">25</span> A</td><td class='small'><span class="l-fr">18 % du maximum cellule</span><span class="l-en">18 % of the cell maximum</span></td><td><span class='pill pok'><span class="l-fr">conforme</span><span class="l-en">pass</span></span></td></tr><tr><td class='mono'>ENE-03</td><td><span class="l-fr">Courant par cellule en pointe (T/W = 2)</span><span class="l-en">Current per cell at peak (T/W = 2)</span></td><td class='num val'><span class="l-fr">12,9</span><span class="l-en">12.9</span> A</td><td class='num muted'><span class="l-fr">25</span><span class="l-en">25</span> A</td><td class='small'><span class="l-fr">52 % du maximum cellule</span><span class="l-en">52 % of the cell maximum</span></td><td><span class='pill pok'><span class="l-fr">conforme</span><span class="l-en">pass</span></span></td></tr><tr><td class='mono'>MAS-01</td><td><span class="l-fr">Masse au décollage contre MTOW constructeur</span><span class="l-en">All-up weight against manufacturer MTOW</span></td><td class='num val'><span class="l-fr">19,2</span><span class="l-en">19.2</span> kg</td><td class='num muted'><span class="l-fr">21</span><span class="l-en">21</span> kg</td><td class='small'><span class="l-fr">1798 g de marge (8.6 %)</span><span class="l-en">1798 g margin (8.6 %)</span></td><td><span class='pill pok'><span class="l-fr">conforme</span><span class="l-en">pass</span></span></td></tr><tr><td class='mono'>MAS-02</td><td><span class="l-fr">Marge de masse</span><span class="l-en">Mass margin</span></td><td class='num val'><span class="l-fr">8,6</span><span class="l-en">8.6</span> %</td><td class='num muted'><span class="l-fr">8</span><span class="l-en">8</span> %</td><td class='small'><span class="l-fr">cible 8 %</span><span class="l-en">target 8 %</span></td><td><span class='pill pok'><span class="l-fr">conforme</span><span class="l-en">pass</span></span></td></tr></tbody></table></div>
+<div class="note"><span class="l-fr">Ces vérifications sont accompagnées d'une suite de 38 tests de non-régression. Chaque test reproduit une erreur réellement commise dans la version précédente du dossier et échoue si elle redevient possible. La suite est elle-même testée par mutation : on casse volontairement des entrées et on vérifie qu'au moins un test le détecte.</span><span class="l-en">These checks are backed by a suite of 38 regression tests. Each test reproduces an error actually made in the previous version of the dossier and fails if it becomes possible again. The suite is itself mutation-tested: inputs are deliberately broken to confirm that at least one test catches it.</span></div>
+</div></section>
+
+<section id="corrections"><div class="wrap">
+<div class="sh"><span class="sn">10</span><h2><span class="l-fr">Ce qui a changé depuis la v1</span><span class="l-en">What changed since v1</span></h2></div>
+<p class="sub"><span class="l-fr">Cette fiche succède à un dossier technique dont l'arithmétique était presque toujours juste, mais dont quatre conclusions structurantes ne survivaient pas à la re-dérivation. Les corrections sont listées ici plutôt que passées sous silence : elles font partie du dossier.</span><span class="l-en">This datasheet supersedes a technical dossier whose arithmetic was almost always right, but four of whose structural conclusions did not survive re-derivation. The corrections are listed here rather than quietly dropped: they are part of the record.</span></p>
+<div class="tblwrap"><table><thead><tr>
+<th><span class="l-fr">Sujet</span><span class="l-en">Topic</span></th><th><span class="l-fr">Version 1</span><span class="l-en">Version 1</span></th>
+<th><span class="l-fr">Version 2</span><span class="l-en">Version 2</span></th><th><span class="l-fr">Pourquoi</span><span class="l-en">Why</span></th>
+</tr></thead><tbody><tr><td><span class="l-fr">Table de poussée moteur</span><span class="l-en">Motor thrust table</span></td><td class='small muted strike'><span class="l-fr">7,5 kgf par moteur à 540 W</span><span class="l-en">7.5 kgf per motor at 540 W</span></td><td class='small val'><span class="l-fr">8,72 kgf mesurés au banc constructeur, à 1 406 W</span><span class="l-en">8.72 kgf measured on the manufacturer bench, at 1 406 W</span></td><td class='small'><span class="l-fr">La table de la v1 impliquait une figure de mérite de 1,18 à 1,44 — un rotor qui rendrait plus d'énergie qu'il n'en reçoit.</span><span class="l-en">The v1 table implied a figure of merit of 1.18 to 1.44 — a rotor returning more energy than it receives.</span></td></tr><tr><td><span class="l-fr">Moteur et hélice</span><span class="l-en">Motor and propeller</span></td><td class='small muted strike'><span class="l-fr">6215 170 kV sous 12S, hélice 28″</span><span class="l-en">6215 170 kV on 12S, 28″ propeller</span></td><td class='small val'><span class="l-fr">U8 Lite 100 kV sous 12S, hélice 28″</span><span class="l-en">U8 Lite 100 kV on 12S, 28″ propeller</span></td><td class='small'><span class="l-fr">170 kV × 43,2 V donne 7 344 tr/min, soit 273 m/s en bout de pale — Mach 0,80. Aucune hélice carbone ne tient ce régime.</span><span class="l-en">170 kV × 43.2 V gives 7 344 rpm, that is 273 m/s at the blade tip — Mach 0.80. No carbon propeller survives that.</span></td></tr><tr><td><span class="l-fr">Puissance en stationnaire</span><span class="l-en">Hover power</span></td><td class='small muted strike'><span class="l-fr">900 W</span><span class="l-en">900 W</span></td><td class='small val'><span class="l-fr">1 763 W</span><span class="l-en">1 763 W</span></td><td class='small'><span class="l-fr">La figure de mérite est un rendement aérodynamique : elle ne contient ni les pertes moteur ni les pertes ESC. La v1 l'appliquait comme si elle couvrait toute la chaîne.</span><span class="l-en">Figure of merit is an aerodynamic efficiency: it contains neither motor nor ESC losses. v1 applied it as if it covered the whole chain.</span></td></tr><tr><td><span class="l-fr">Géométrie du châssis</span><span class="l-en">Airframe geometry</span></td><td class='small muted strike'><span class="l-fr">Diagonale 900 mm, hélices 28″</span><span class="l-en">900 mm diagonal, 28″ propellers</span></td><td class='small val'><span class="l-fr">Envergure 1 494 mm</span><span class="l-en">1 494 mm span</span></td><td class='small'><span class="l-fr">À 900 mm de diagonale, deux hélices adjacentes de 711 mm se recouvrent de 75 mm. Le drone décrit n'était pas assemblable.</span><span class="l-en">At 900 mm diagonal, two adjacent 711 mm propellers overlap by 75 mm. The aircraft as described could not be assembled.</span></td></tr><tr><td><span class="l-fr">Énergie disponible</span><span class="l-en">Available energy</span></td><td class='small muted strike'><span class="l-fr">583 Wh, capacité nominale</span><span class="l-en">583 Wh, nameplate capacity</span></td><td class='small val'><span class="l-fr">1 116 Wh utilisables sur 1 728 Wh nominaux</span><span class="l-en">1 116 Wh usable out of 1 728 Wh nameplate</span></td><td class='small'><span class="l-fr">Une batterie ne restitue pas sa capacité nominale en vol : plancher de charge, affaissement de tension et vieillissement retirent un tiers de l'énergie.</span><span class="l-en">A battery does not deliver its nameplate capacity in flight: charge floor, voltage sag and ageing remove a third of the energy.</span></td></tr><tr><td><span class="l-fr">Dérive du module sous vent</span><span class="l-en">Module drift in wind</span></td><td class='small muted strike'><span class="l-fr">0 m grâce aux moteurs bi-axiaux</span><span class="l-en">0 m thanks to bi-axial motors</span></td><td class='small val'><span class="l-fr">1,63 m à 12 m/s, quelle que soit l'architecture</span><span class="l-en">1.63 m at 12 m/s, whatever the architecture</span></td><td class='small'><span class="l-fr">Garder le châssis à plat empêche le point d'attache de bouger par rapport au drone. Cela ne fait rien contre le vent qui souffle sur la charge suspendue.</span><span class="l-en">Keeping the airframe level stops the attachment point moving relative to the aircraft. It does nothing about the wind blowing on the suspended load.</span></td></tr><tr><td><span class="l-fr">Cas de chute du module</span><span class="l-en">Module drop case</span></td><td class='small muted strike'><span class="l-fr">1,5 m — 44 J</span><span class="l-en">1.5 m — 44 J</span></td><td class='small val'><span class="l-fr">10 m — 294 J</span><span class="l-en">10 m — 294 J</span></td><td class='small'><span class="l-fr">Le câble mesure 10 m et peut rompre à tout instant de la descente. Le cas dimensionnant est la hauteur maximale, pas une valeur intermédiaire.</span><span class="l-en">The cable is 10 m long and can fail at any point during descent. The sizing case is the maximum height, not an intermediate value.</span></td></tr><tr><td><span class="l-fr">Portée annoncée</span><span class="l-en">Claimed range</span></td><td class='small muted strike'><span class="l-fr">15 km avec 3 kg de charge utile</span><span class="l-en">15 km with 3 kg payload</span></td><td class='small val'><span class="l-fr">8 km avec 3,0 kg</span><span class="l-en">8 km with 3.0 kg</span></td><td class='small'><span class="l-fr">15 km n'est atteignable par aucune configuration multirotor de cette classe, quelle que soit la charge utile. C'est une limite de la formule, pas un défaut de dimensionnement.</span><span class="l-en">15 km is not reachable by any multirotor configuration in this class, whatever the payload. That is a limit of the vehicle formula, not a sizing error.</span></td></tr></tbody></table></div>
+</div></section>
+
+<section id="limites"><div class="wrap">
+<div class="sh"><span class="sn">11</span><h2><span class="l-fr">Ce que cette fiche ne couvre pas</span><span class="l-en">What this datasheet does not cover</span></h2></div>
+<p class="sub"><span class="l-fr">Un document qui ne déclare pas ses limites prétend à une complétude qu'il n'a pas. Voici ce qui reste ouvert, en toute connaissance de cause.</span><span class="l-en">A document that does not declare its limits claims a completeness it does not have. Here is what remains open, knowingly.</span></p>
+<ul class="reflist"><li><b><span class="l-fr">Les masses ne sont pas pesées</span><span class="l-en">Masses are not weighed</span></b><span><span class="l-fr">Chaque ligne du budget porte sa provenance, mais aucun composant n'est encore pesé. Les postes marqués « estimé » représentent une part minoritaire du total et portent une marge explicite ; ils restent la dette la plus diffuse.</span><span class="l-en">Every budget line carries its provenance, but no component has yet been weighed. Items marked “estimated” are a minority of the total and carry an explicit margin, but they remain the most diffuse debt.</span></span></li><li><b><span class="l-fr">Le banc de poussée est celui du constructeur, pas le nôtre</span><span class="l-en">The thrust bench is the manufacturer’s, not ours</span></b><span><span class="l-fr">Les 20 points de mesure viennent de la fiche T-Motor. Ils sont cohérents avec la théorie du disque actuateur à 5 % près, ce qui est rassurant, mais ils ont été relevés sur leur montage, à leur température ambiante. Un banc interne reste nécessaire avant tout gel définitif.</span><span class="l-en">The 20 measurement points come from the T-Motor datasheet. They agree with actuator disk theory within 5%, which is reassuring, but they were taken on their rig at their ambient temperature. An in-house bench is still required before any final freeze.</span></span></li><li><b><span class="l-fr">La structure n'est pas dimensionnée</span><span class="l-en">The structure is not sized</span></b><span><span class="l-fr">La masse des bras est calculée depuis la section relevée sur la CAO du projet et la densité du carbone. Ni le flambement local de la paroi comprimée, ni le délaminage à l'encastrement, ni la première fréquence propre ne sont calculés. Ce sont eux qui dimensionnent réellement un tube composite.</span><span class="l-en">Arm mass is computed from the section measured on the project CAD and carbon density. Neither local buckling of the compressed wall, nor delamination at the root, nor the first natural frequency is computed. Those are what actually size a composite tube.</span></span></li><li><b><span class="l-fr">Aucun vol par température négative n'est couvert</span><span class="l-en">No sub-zero operation is covered</span></b><span><span class="l-fr">Le modèle prend la masse volumique de l'air en paramètre mais la campagne batterie à froid n'est pas faite. Le domaine thermique annoncé doit rester celui qui a été vérifié, pas celui qu'on aimerait.</span><span class="l-en">The model takes air density as a parameter but the cold-weather battery campaign has not been run. The declared thermal envelope must remain the one that was verified, not the one we would like.</span></span></li><li><b><span class="l-fr">La dynamique pendulaire du module n'est pas modélisée</span><span class="l-en">The module’s pendulum dynamics are not modelled</span></b><span><span class="l-fr">La dérive donnée est statique. Un module de 3 kg au bout de 10 m de câble forme un pendule de période propre d'environ 6 s, très peu amorti, qui peut se coupler à la boucle de position du drone. C'est un essai, pas un calcul.</span><span class="l-en">The drift figure is static. A 3 kg module on 10 m of cable is a pendulum with a natural period near 6 s, very lightly damped, which can couple with the aircraft position loop. That is a test, not a calculation.</span></span></li><li><b><span class="l-fr">Un quadrirotor à plus gros moteur n'a pas été exploré</span><span class="l-en">A larger-motor quadrotor was not explored</span></b><span><span class="l-fr">La comparaison porte sur le même couple moteur/hélice dans les deux configurations. Un quadrirotor équipé d'un moteur de classe supérieure pourrait fermer différemment ; cela n'a pas été évalué.</span><span class="l-en">The comparison uses the same motor/propeller pair in both configurations. A quadrotor with a larger motor class might close differently; this was not evaluated.</span></span></li></ul>
+</div></section>
+
+<section id="methode"><div class="wrap">
+<div class="sh"><span class="sn">12</span><h2><span class="l-fr">Méthode et sources</span><span class="l-en">Method and sources</span></h2></div>
+<div class="grid2">
+<div><h5><span class="l-fr">Comment les chiffres sont produits</span><span class="l-en">How the figures are produced</span></h5>
+<p class="small muted"><span class="l-fr">Aucun nombre de cette page n'est saisi à la main. Un modèle Python calcule le point de conception en bouclant masse, poussée, puissance, énergie et taille de batterie jusqu'à convergence, puis génère cette fiche. Chaque entrée du modèle porte son origine : mesurée, fiche technique, littérature, estimée, ou choix de conception assumé. Modifier une entrée met la fiche à jour.</span><span class="l-en">No number on this page is typed by hand. A Python model computes the design point by looping mass, thrust, power, energy and battery size until convergence, then generates this datasheet. Every model input carries its origin: measured, datasheet, literature, estimated, or assumed design choice. Changing an input updates the page.</span></p>
+<table class="small" style="margin-top:14px"><tbody>
+<tr><td><code>model_v2.py</code></td>
+<td class="small muted"><span class="l-fr">Modèle de dimensionnement convergent</span><span class="l-en">Convergent sizing model</span></td></tr>
+<tr><td><code>test_regressions.py</code></td>
+<td class="small muted"><span class="l-fr">38 tests de non-régression + vérification par mutation</span><span class="l-en">38 regression tests + mutation checking</span></td></tr>
+<tr><td><code>build_datasheet.py</code></td>
+<td class="small muted"><span class="l-fr">Génère cette page</span><span class="l-en">Generates this page</span></td></tr>
+<tr><td><code>prepare_models.py</code></td>
+<td class="small muted"><span class="l-fr">Décime les STL de la CAO pour la vue 3D</span><span class="l-en">Decimates CAD STL files for the 3D view</span></td></tr>
+</tbody></table></div>
+<div><h5><span class="l-fr">Sources externes</span><span class="l-en">External sources</span></h5>
+<ul class="reflist">
+<li><a href="https://store.tmotor.com/product/u8-lite-kv100-u-efficiency.html">
+<b>T-Motor U8 Lite KV100</b></a><span><span class="l-fr">Tableau de banc 12S avec hélice G28×9.2 CF, masse, puissance et courant maximaux, MTOW recommandé en quadrirotor et en hexarotor.</span><span class="l-en">12S bench table with G28×9.2 CF propeller, mass, maximum power and current, recommended MTOW as quadrotor and hexarotor.</span></span></li>
+<li><a href="https://www.samsungsdi.com/"><b>Samsung INR21700-50S</b></a><span><span class="l-fr">Cellule 5 000 mAh, 25 A en décharge continue, 72 g. Retenue pour sa densité d'énergie : le besoin réel en courant est cinq fois inférieur à ce qu'offre une cellule de puissance.</span><span class="l-en">5 000 mAh cell, 25 A continuous discharge, 72 g. Chosen for energy density: the actual current demand is five times lower than what a power cell offers.</span></span></li>
+<li><b><span class="l-fr">Modèles 3D</span><span class="l-en">3D models</span></b><span><span class="l-fr">Pièces exportées de la CAO du projet (Fusion 360), décimées par regroupement de sommets.</span><span class="l-en">Parts exported from the project CAD (Fusion 360), decimated by vertex clustering.</span></span></li>
+</ul></div></div>
+</div></section>
+
+<footer><div class="wrap">
+<p><strong><span class="l-fr">DUA — Drone d'Urgence Autonome</span><span class="l-en">DUA — Autonomous Emergency Drone</span></strong> ·
+<span class="l-fr">Fiche technique révision 2.0</span><span class="l-en">Datasheet revision 2.0</span> · Clément Rapin-Vazquez</p>
+<p><span class="l-fr">Tous les chiffres sont générés par le modèle de dimensionnement et régénérés à chaque construction de cette page. Cette fiche supersède intégralement le dossier technique v1.0.</span><span class="l-en">All figures are generated by the sizing model and regenerated on every build of this page. This datasheet fully supersedes technical dossier v1.0.</span></p>
+</div></footer>
+
+<script src="dua-models.js"></script>
+<script>
+/* ---------------- bascule de langue ---------------- */
+(function(){
+  var root=document.documentElement;
+  var saved=null; try{saved=localStorage.getItem('duaLang')}catch(e){}
+  function set(l){
+    root.setAttribute('data-lang',l); root.setAttribute('lang',l);
+    document.querySelectorAll('.lang button').forEach(function(b){
+      b.classList.toggle('on', b.getAttribute('data-set')===l);
+    });
+    try{localStorage.setItem('duaLang',l)}catch(e){}
+  }
+  document.querySelectorAll('.lang button').forEach(function(b){
+    b.addEventListener('click',function(){ set(b.getAttribute('data-set')); });
+  });
+  set(saved==='en'?'en':'fr');
+})();
+
+/* ---------------- visionneuse 3D, WebGL sans dependance ---------------- */
+(function(){
+  var stage=document.getElementById('stage'), msg=document.getElementById('vmsg');
+  if(!stage) return;
+
+  function fail(fr,en){
+    msg.style.display='flex';
+    msg.innerHTML='<span class="l-fr">'+fr+'</span><span class="l-en">'+en+'</span>';
+  }
+
+  var canvas=document.createElement('canvas');
+  stage.insertBefore(canvas,msg);
+  var gl=canvas.getContext('webgl',{antialias:true,alpha:true})
+       ||canvas.getContext('experimental-webgl');
+  if(!gl){
+    fail('WebGL n\'est pas disponible dans ce navigateur.',
+         'WebGL is not available in this browser.');
+    return;
+  }
+
+  /* ---- algebre 4x4, colonne-majeur ---- */
+  function sub(a,b){return [a[0]-b[0],a[1]-b[1],a[2]-b[2]];}
+  function cross(a,b){return [a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];}
+  function dot(a,b){return a[0]*b[0]+a[1]*b[1]+a[2]*b[2];}
+  function norm(a){var l=Math.hypot(a[0],a[1],a[2])||1;return [a[0]/l,a[1]/l,a[2]/l];}
+  function perspective(fovy,aspect,near,far){
+    var f=1/Math.tan(fovy/2), nf=1/(near-far);
+    return new Float32Array([f/aspect,0,0,0, 0,f,0,0,
+                             0,0,(far+near)*nf,-1, 0,0,2*far*near*nf,0]);
+  }
+  function lookAt(eye,center,up){
+    var z=norm(sub(eye,center)), x=norm(cross(up,z)), y=cross(z,x);
+    return new Float32Array([x[0],y[0],z[0],0, x[1],y[1],z[1],0, x[2],y[2],z[2],0,
+                             -dot(x,eye),-dot(y,eye),-dot(z,eye),1]);
+  }
+  function mul(a,b){
+    var o=new Float32Array(16);
+    for(var i=0;i<4;i++) for(var j=0;j<4;j++){
+      var s=0; for(var k=0;k<4;k++) s+=a[k*4+j]*b[i*4+k];
+      o[i*4+j]=s;
+    }
+    return o;
+  }
+
+  /* ---- programme de rendu ---- */
+  var VS='attribute vec3 aPos;attribute vec3 aNrm;uniform mat4 uMVP;'+
+         'varying vec3 vN;varying vec3 vP;'+
+         'void main(){vN=aNrm;vP=aPos;gl_Position=uMVP*vec4(aPos,1.0);}';
+  var FS='precision mediump float;varying vec3 vN;varying vec3 vP;'+
+         'uniform vec3 uColor;uniform float uFlat;'+
+         'void main(){'+
+         ' vec3 n=normalize(vN);'+
+         ' vec3 l1=normalize(vec3(0.45,0.75,0.5));'+
+         ' vec3 l2=normalize(vec3(-0.5,-0.25,-0.4));'+
+         ' float d=max(dot(n,l1),0.0)*0.78+max(dot(n,l2),0.0)*0.22;'+
+         ' float amb=0.42+0.10*n.y;'+
+         ' vec3 c=uColor*(amb+d);'+
+         ' float rim=pow(1.0-abs(n.z),3.0)*0.13;'+
+         ' c+=vec3(rim);'+
+         ' gl_FragColor=vec4(mix(c,uColor,uFlat),1.0);}';
+
+  function shader(type,src){
+    var s=gl.createShader(type); gl.shaderSource(s,src); gl.compileShader(s);
+    if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))
+      throw new Error(gl.getShaderInfoLog(s));
+    return s;
+  }
+  var prog=gl.createProgram();
+  try{
+    gl.attachShader(prog,shader(gl.VERTEX_SHADER,VS));
+    gl.attachShader(prog,shader(gl.FRAGMENT_SHADER,FS));
+    gl.linkProgram(prog);
+    if(!gl.getProgramParameter(prog,gl.LINK_STATUS))
+      throw new Error(gl.getProgramInfoLog(prog));
+  }catch(e){
+    fail('Le rendu 3D n\'a pas pu s\'initialiser.','The 3D renderer failed to initialise.');
+    return;
+  }
+  gl.useProgram(prog);
+  var aPos=gl.getAttribLocation(prog,'aPos'), aNrm=gl.getAttribLocation(prog,'aNrm');
+  var uMVP=gl.getUniformLocation(prog,'uMVP'), uColor=gl.getUniformLocation(prog,'uColor');
+  var uFlat=gl.getUniformLocation(prog,'uFlat');
+  gl.enable(gl.DEPTH_TEST);
+
+  var bufPos=gl.createBuffer(), bufNrm=gl.createBuffer();
+  var bufIdx=gl.createBuffer(), bufWire=gl.createBuffer();
+  var nIndex=0, nWire=0, uint32=!!gl.getExtension('OES_element_index_uint');
+  var haveMesh=false;
+
+  /* ---- normales par sommet ---- */
+  function computeNormals(pos,idx){
+    var n=new Float32Array(pos.length);
+    for(var i=0;i<idx.length;i+=3){
+      var a=idx[i]*3,b=idx[i+1]*3,c=idx[i+2]*3;
+      var ux=pos[b]-pos[a],uy=pos[b+1]-pos[a+1],uz=pos[b+2]-pos[a+2];
+      var vx=pos[c]-pos[a],vy=pos[c+1]-pos[a+1],vz=pos[c+2]-pos[a+2];
+      var nx=uy*vz-uz*vy, ny=uz*vx-ux*vz, nz=ux*vy-uy*vx;
+      n[a]+=nx;n[a+1]+=ny;n[a+2]+=nz;
+      n[b]+=nx;n[b+1]+=ny;n[b+2]+=nz;
+      n[c]+=nx;n[c+1]+=ny;n[c+2]+=nz;
+    }
+    for(var j=0;j<n.length;j+=3){
+      var l=Math.hypot(n[j],n[j+1],n[j+2])||1;
+      n[j]/=l;n[j+1]/=l;n[j+2]/=l;
+    }
+    return n;
+  }
+
+  function upload(pos,idx,label){
+    var nrm=computeNormals(pos,idx);
+    gl.bindBuffer(gl.ARRAY_BUFFER,bufPos);
+    gl.bufferData(gl.ARRAY_BUFFER,pos,gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER,bufNrm);
+    gl.bufferData(gl.ARRAY_BUFFER,nrm,gl.STATIC_DRAW);
+
+    var IdxArr = uint32 ? Uint32Array : Uint16Array;
+    if(!uint32 && pos.length/3 > 65535){
+      fail('Ce maillage depasse ce que ce navigateur peut afficher.',
+           'This mesh exceeds what this browser can display.');
+      return false;
+    }
+    var tri=new IdxArr(idx);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,bufIdx);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,tri,gl.STATIC_DRAW);
+    nIndex=tri.length;
+
+    var w=new IdxArr(idx.length*2);
+    for(var i=0,k=0;i<idx.length;i+=3){
+      w[k++]=idx[i];  w[k++]=idx[i+1];
+      w[k++]=idx[i+1];w[k++]=idx[i+2];
+      w[k++]=idx[i+2];w[k++]=idx[i];
+    }
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,bufWire);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,w,gl.STATIC_DRAW);
+    nWire=w.length;
+
+    haveMesh=true; msg.style.display='none';
+    document.getElementById('vinfo').textContent=
+      label+' · '+(idx.length/3).toLocaleString('fr-FR')+' tri';
+    return true;
+  }
+
+  /* ---- camera et boucle ---- */
+  var rotX=-0.5, rotY=0.7, dist=2.3, spinning=true, wire=false;
+  function resize(){
+    var dpr=Math.min(window.devicePixelRatio||1,2);
+    var w=stage.clientWidth, h=stage.clientHeight;
+    canvas.width=Math.round(w*dpr); canvas.height=Math.round(h*dpr);
+    canvas.style.width=w+'px'; canvas.style.height=h+'px';
+    gl.viewport(0,0,canvas.width,canvas.height);
+  }
+  window.addEventListener('resize',resize);
+
+  function frame(){
+    requestAnimationFrame(frame);
+    gl.clearColor(0,0,0,0);
+    gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+    if(!haveMesh) return;
+    if(spinning) rotY+=0.005;
+    var eye=[dist*Math.cos(rotX)*Math.sin(rotY),
+             dist*Math.sin(rotX),
+             dist*Math.cos(rotX)*Math.cos(rotY)];
+    var mvp=mul(perspective(0.66,canvas.width/canvas.height,0.01,60),
+                lookAt(eye,[0,0,0],[0,1,0]));
+    gl.uniformMatrix4fv(uMVP,false,mvp);
+    gl.bindBuffer(gl.ARRAY_BUFFER,bufPos);
+    gl.enableVertexAttribArray(aPos); gl.vertexAttribPointer(aPos,3,gl.FLOAT,false,0,0);
+    gl.bindBuffer(gl.ARRAY_BUFFER,bufNrm);
+    gl.enableVertexAttribArray(aNrm); gl.vertexAttribPointer(aNrm,3,gl.FLOAT,false,0,0);
+    var type=uint32?gl.UNSIGNED_INT:gl.UNSIGNED_SHORT;
+    if(wire){
+      gl.uniform3f(uColor,0.77,0.33,0.16); gl.uniform1f(uFlat,1.0);
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,bufWire);
+      gl.drawElements(gl.LINES,nWire,type,0);
+    }else{
+      gl.uniform3f(uColor,0.60,0.63,0.66); gl.uniform1f(uFlat,0.0);
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,bufIdx);
+      gl.drawElements(gl.TRIANGLES,nIndex,type,0);
+    }
+  }
+
+  /* ---- interaction ---- */
+  var dragging=false,lx=0,ly=0;
+  stage.addEventListener('pointerdown',function(e){
+    dragging=true;lx=e.clientX;ly=e.clientY;stage.classList.add('drag');
+    try{stage.setPointerCapture(e.pointerId)}catch(err){}
+  });
+  stage.addEventListener('pointermove',function(e){
+    if(!dragging)return;
+    rotY+=(e.clientX-lx)*0.008; rotX-=(e.clientY-ly)*0.008;
+    rotX=Math.max(-1.5,Math.min(1.5,rotX)); lx=e.clientX; ly=e.clientY;
+  });
+  function endDrag(e){
+    dragging=false;stage.classList.remove('drag');
+    try{stage.releasePointerCapture(e.pointerId)}catch(err){}
+  }
+  stage.addEventListener('pointerup',endDrag);
+  stage.addEventListener('pointercancel',endDrag);
+  stage.addEventListener('wheel',function(e){
+    e.preventDefault();
+    dist*=(1+Math.sign(e.deltaY)*0.12);
+    dist=Math.max(0.7,Math.min(9,dist));
+  },{passive:false});
+
+  /* ---- decodage du pack embarque ---- */
+  function b64(s){
+    var bin=atob(s),len=bin.length,arr=new Uint8Array(len);
+    for(var i=0;i<len;i++)arr[i]=bin.charCodeAt(i);
+    return arr;
+  }
+  function inflate(bytes){
+    if(typeof DecompressionStream==='undefined')
+      return Promise.reject(new Error('no-decompression'));
+    var ds=new DecompressionStream('deflate');   /* format zlib, comme a l'ecriture */
+    return new Response(new Blob([bytes]).stream().pipeThrough(ds)).arrayBuffer();
+  }
+  function loadPacked(m){
+    return Promise.all([inflate(b64(m.positions)),inflate(b64(m.index))])
+      .then(function(bufs){
+        var pos=new Float32Array(bufs[0]);
+        var idx=new Uint32Array(bufs[1]);
+        var lang=document.documentElement.getAttribute('data-lang');
+        upload(pos,idx,lang==='en'?m.label_en:m.label_fr);
+        resize();
+      });
+  }
+
+  /* ---- STL depose par l'utilisateur ---- */
+  function parseSTL(buf){
+    var dv=new DataView(buf);
+    if(buf.byteLength<84) throw new Error('too-short');
+    var n=dv.getUint32(80,true);
+    if(84+50*n!==buf.byteLength) throw new Error('stl-ascii');
+    var pos=new Float32Array(n*9), idx=new Uint32Array(n*3), o=84, k=0;
+    var lo=[1e9,1e9,1e9],hi=[-1e9,-1e9,-1e9];
+    for(var i=0;i<n;i++){
+      o+=12;
+      for(var v=0;v<3;v++){
+        for(var a=0;a<3;a++){
+          var x=dv.getFloat32(o,true); o+=4; pos[k]=x;
+          if(x<lo[a])lo[a]=x; if(x>hi[a])hi[a]=x;
+          k++;
+        }
+      }
+      o+=2;
+      idx[i*3]=i*3; idx[i*3+1]=i*3+1; idx[i*3+2]=i*3+2;
+    }
+    var ctr=[(lo[0]+hi[0])/2,(lo[1]+hi[1])/2,(lo[2]+hi[2])/2];
+    var sc=Math.max(hi[0]-lo[0],hi[1]-lo[1],hi[2]-lo[2])||1;
+    for(var j=0;j<pos.length;j+=3){
+      pos[j]=(pos[j]-ctr[0])/sc; pos[j+1]=(pos[j+1]-ctr[1])/sc; pos[j+2]=(pos[j+2]-ctr[2])/sc;
+    }
+    return {pos:pos,idx:idx,scale:sc};
+  }
+  ['dragenter','dragover'].forEach(function(ev){
+    stage.addEventListener(ev,function(e){e.preventDefault();stage.classList.add('over');});
+  });
+  ['dragleave','drop'].forEach(function(ev){
+    stage.addEventListener(ev,function(e){e.preventDefault();stage.classList.remove('over');});
+  });
+  stage.addEventListener('drop',function(e){
+    var f=e.dataTransfer.files&&e.dataTransfer.files[0]; if(!f)return;
+    var rd=new FileReader();
+    rd.onload=function(){
+      try{
+        var r=parseSTL(rd.result);
+        upload(r.pos,r.idx,f.name+' — '+Math.round(r.scale)+' mm');
+      }catch(err){
+        if(err.message==='stl-ascii')
+          fail('STL au format texte. Un export STL binaire est necessaire.',
+               'Text-format STL. A binary STL export is required.');
+        else
+          fail('Fichier illisible.','Unreadable file.');
+      }
+    };
+    rd.readAsArrayBuffer(f);
+  });
+
+  /* ---- boutons ---- */
+  document.getElementById('btn-rot').addEventListener('click',function(){
+    spinning=!spinning; this.classList.toggle('on',spinning);
+  });
+  document.getElementById('btn-wire').addEventListener('click',function(){
+    wire=!wire; this.classList.toggle('on',wire);
+  });
+  document.getElementById('btn-reset').addEventListener('click',function(){
+    rotX=-0.5; rotY=0.7; dist=2.3;
+  });
+
+  /* ---- amorcage ---- */
+  resize(); frame();
+  var models=(window.DUA_MODELS&&window.DUA_MODELS.models)||[];
+  if(models.length){
+    var bar=document.getElementById('vbar');
+    var anchor=bar.firstChild;
+    models.forEach(function(m,i){
+      var b=document.createElement('button');
+      b.className='mdl'+(i===0?' on':'');
+      b.innerHTML='<span class="l-fr">'+m.label_fr+'</span>'+
+                  '<span class="l-en">'+m.label_en+'</span>';
+      b.addEventListener('click',function(){
+        bar.querySelectorAll('button.mdl').forEach(function(x){x.classList.remove('on');});
+        b.classList.add('on');
+        loadPacked(m).catch(function(){
+          fail('Ce modele n\'a pas pu etre decompresse.','This model could not be decompressed.');
+        });
+      });
+      bar.insertBefore(b,anchor);
+    });
+    loadPacked(models[0]).catch(function(){
+      fail('La decompression n\'est pas disponible dans ce navigateur. '+
+           'Vous pouvez deposer un fichier STL binaire sur cette vue.',
+           'Decompression is unavailable in this browser. '+
+           'You can drop a binary STL file onto this view.');
+    });
+  } else {
+    fail('Aucun modele embarque. Deposez un fichier STL binaire sur cette vue.',
+         'No embedded model. Drop a binary STL file onto this view.');
+  }
+})();
+</script></body></html>
