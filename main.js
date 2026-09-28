@@ -116,6 +116,66 @@
     if (!menu.contains(event.target)) toggleMenu(false);
   });
 
+  /* ── physique des bulles : ressort + flottement + magnétique + inertie scroll ── */
+  const bubbles = Array.from(navigation.querySelectorAll('.bubble'));
+  const ARC = [0, 7, 11, 7, 0];
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const kick = { x: 0, y: 0, last: window.scrollY };
+  const mouse = { x: 0, y: 0, active: false };
+  const parts = bubbles.map((el, i) => ({ el, x: 0, y: 0, vx: 0, vy: 0, s: 0, vs: 0, phase: Math.random() * Math.PI * 2, arc: ARC[i] || 0, cx: 0, cy: 0 }));
+
+  function cacheCenters() {
+    const nav = navigation.getBoundingClientRect();
+    parts.forEach(p => {
+      p.cx = nav.left + p.el.offsetLeft + p.el.offsetWidth / 2;
+      p.cy = nav.top + p.el.offsetTop + p.el.offsetHeight / 2;
+    });
+  }
+  menu.addEventListener('pointermove', e => { mouse.active = true; mouse.x = e.clientX; mouse.y = e.clientY; });
+  menu.addEventListener('pointerleave', () => { mouse.active = false; });
+  window.addEventListener('scroll', () => {
+    kick.y += (window.scrollY - kick.last) * 0.22;
+    kick.last = window.scrollY;
+  }, { passive: true });
+
+  let openAt = -1e9, wasOpen = false;
+  function physics() {
+    const t = performance.now() / 1000;
+    const open = menu.classList.contains('menu-open');
+    if (open && !wasOpen) { openAt = performance.now(); cacheCenters(); }
+    wasOpen = open;
+    parts.forEach((p, i) => {
+      const target = open && (performance.now() - openAt > i * 60) ? 1 : 0;
+      let tx = 0, ty = p.arc;
+      if (open) {
+        const spd = 0.9 + (i % 3) * 0.18;
+        ty += Math.sin(t * spd + p.phase) * 3.2;
+        tx += Math.cos(t * spd * 0.7 + p.phase) * 1.8;
+        if (mouse.active) {
+          const dx = p.cx - mouse.x, dy = p.cy - mouse.y;
+          const d = Math.hypot(dx, dy) || 1, R = 150;
+          if (d < R) { const f = (1 - d / R) * 15; tx += (dx / d) * f; ty += (dy / d) * f; }
+        }
+      }
+      if (reduceMotion) {
+        p.s = target; p.x = tx; p.y = ty; p.vx = p.vy = p.vs = 0;
+      } else {
+        p.vs += (target - p.s) * 0.18; p.vs *= 0.82; p.s += p.vs;
+        p.vx += kick.x; p.vy += kick.y;
+        p.vx += (tx - p.x) * 0.12; p.vx *= 0.78;
+        p.vy += (ty - p.y) * 0.12; p.vy *= 0.78;
+        p.x += p.vx; p.y += p.vy;
+      }
+      p.el.style.transform = `translate(${p.x.toFixed(2)}px, ${p.y.toFixed(2)}px) scale(${Math.max(0, p.s).toFixed(3)})`;
+      p.el.style.opacity = p.s <= 0.02 ? '0' : Math.min(1, p.s).toFixed(3);
+    });
+    kick.x *= 0.88; kick.y *= 0.88;
+    requestAnimationFrame(physics);
+  }
+  cacheCenters();
+  window.addEventListener('resize', cacheCenters);
+  physics();
+
   const background = [document.getElementById('header'), document.getElementById('main'), document.getElementById('footer'), document.querySelector('.skip-link')];
   let activeOverlay = null;
   let returnFocus = null;
@@ -185,4 +245,52 @@
     entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('is-visible'); io.unobserve(e.target); } });
   }, { threshold: 0.1, rootMargin: '0px 0px -8% 0px' });
   targets.forEach(el => io.observe(el));
+})();
+
+/* ── pro UI : barre de progression, spotlight, boutons magnétiques ── */
+(() => {
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const progress = document.querySelector('.scroll-progress');
+  if (progress) {
+    const update = () => {
+      const h = document.documentElement;
+      const max = h.scrollHeight - h.clientHeight;
+      const p = max > 0 ? window.scrollY / max : 0;
+      progress.style.transform = `scaleX(${p.toFixed(4)})`;
+    };
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update, { passive: true });
+    update();
+  }
+
+  document.querySelectorAll('.cover img').forEach(img => {
+    const cover = img.parentElement;
+    const spot = document.createElement('span');
+    spot.className = 'spotlight';
+    spot.setAttribute('aria-hidden', 'true');
+    cover.appendChild(spot);
+    if (reduceMotion) return;
+    cover.addEventListener('pointermove', e => {
+      const r = cover.getBoundingClientRect();
+      spot.style.setProperty('--sx', (e.clientX - r.left) + 'px');
+      spot.style.setProperty('--sy', (e.clientY - r.top) + 'px');
+    });
+  });
+
+  if (!reduceMotion) {
+    document.querySelectorAll('.pill-link, .contact-email, .github').forEach(el => {
+      el.addEventListener('pointermove', e => {
+        const r = el.getBoundingClientRect();
+        const mx = Math.max(-7, Math.min(7, (e.clientX - r.left - r.width / 2) * 0.12));
+        const my = Math.max(-7, Math.min(7, (e.clientY - r.top - r.height / 2) * 0.12));
+        el.style.transition = 'transform .08s ease-out';
+        el.style.transform = `translate(${mx}px, ${my}px)`;
+      });
+      el.addEventListener('pointerleave', () => {
+        el.style.transition = 'transform .5s cubic-bezier(.22,1,.36,1)';
+        el.style.transform = 'translate(0,0)';
+      });
+    });
+  }
 })();
