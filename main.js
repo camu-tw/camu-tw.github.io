@@ -116,19 +116,29 @@
     if (!menu.contains(event.target)) toggleMenu(false);
   });
 
-  /* ── physique des bulles : ressort + flottement + magnétique + inertie scroll ── */
+  /* ── physique des bulles : ressort + flottement + magnétique + inertie scroll + fluide ── */
   const bubbles = Array.from(navigation.querySelectorAll('.bubble'));
+  const blobs = Array.from(navigation.querySelectorAll('.bubble-liquid i'));
   const ARC = [0, 7, 11, 7, 0];
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const kick = { x: 0, y: 0, last: window.scrollY };
   const mouse = { x: 0, y: 0, active: false };
-  const parts = bubbles.map((el, i) => ({ el, x: 0, y: 0, vx: 0, vy: 0, s: 0, vs: 0, phase: Math.random() * Math.PI * 2, arc: ARC[i] || 0, cx: 0, cy: 0 }));
+  const parts = bubbles.map((el, i) => ({ el, blob: blobs[i] || null, x: 0, y: 0, vx: 0, vy: 0, s: 0, vs: 0, phase: Math.random() * Math.PI * 2, arc: ARC[i] || 0, cx: 0, cy: 0 }));
 
   function cacheCenters() {
     const nav = navigation.getBoundingClientRect();
     parts.forEach(p => {
-      p.cx = nav.left + p.el.offsetLeft + p.el.offsetWidth / 2;
-      p.cy = nav.top + p.el.offsetTop + p.el.offsetHeight / 2;
+      const bx = p.el.offsetLeft + p.el.offsetWidth / 2;
+      const by = p.el.offsetTop + p.el.offsetHeight / 2;
+      const size = Math.round(p.el.offsetWidth * 1.08);
+      if (p.blob) {
+        p.blob.style.width = size + 'px';
+        p.blob.style.height = size + 'px';
+        p.blob.style.left = (bx - size / 2) + 'px';
+        p.blob.style.top = (by - size / 2) + 'px';
+      }
+      p.cx = nav.left + bx;
+      p.cy = nav.top + by;
     });
   }
   menu.addEventListener('pointermove', e => { mouse.active = true; mouse.x = e.clientX; mouse.y = e.clientY; });
@@ -153,8 +163,8 @@
         tx += Math.cos(t * spd * 0.7 + p.phase) * 1.8;
         if (mouse.active) {
           const dx = p.cx - mouse.x, dy = p.cy - mouse.y;
-          const d = Math.hypot(dx, dy) || 1, R = 150;
-          if (d < R) { const f = (1 - d / R) * 15; tx += (dx / d) * f; ty += (dy / d) * f; }
+          const d = Math.hypot(dx, dy) || 1, R = 190;
+          if (d < R) { const k = 1 - d / R; const f = k * k * 22; tx += (dx / d) * f; ty += (dy / d) * f; }
         }
       }
       if (reduceMotion) {
@@ -162,12 +172,20 @@
       } else {
         p.vs += (target - p.s) * 0.18; p.vs *= 0.82; p.s += p.vs;
         p.vx += kick.x; p.vy += kick.y;
-        p.vx += (tx - p.x) * 0.12; p.vx *= 0.78;
-        p.vy += (ty - p.y) * 0.12; p.vy *= 0.78;
+        p.vx += (tx - p.x) * 0.13; p.vx *= 0.78;
+        p.vy += (ty - p.y) * 0.13; p.vy *= 0.78;
+        const L = parts[i - 1], Rr = parts[i + 1];
+        if (L) { p.vx += (L.x - p.x) * 0.018; p.vy += (L.y - p.y) * 0.018; }
+        if (Rr) { p.vx += (Rr.x - p.x) * 0.018; p.vy += (Rr.y - p.y) * 0.018; }
         p.x += p.vx; p.y += p.vy;
       }
-      p.el.style.transform = `translate(${p.x.toFixed(2)}px, ${p.y.toFixed(2)}px) scale(${Math.max(0, p.s).toFixed(3)})`;
+      const tf = `translate(${p.x.toFixed(2)}px, ${p.y.toFixed(2)}px) scale(${Math.max(0, p.s).toFixed(3)})`;
+      p.el.style.transform = tf;
       p.el.style.opacity = p.s <= 0.02 ? '0' : Math.min(1, p.s).toFixed(3);
+      if (p.blob) {
+        p.blob.style.transform = tf;
+        p.blob.style.opacity = p.s <= 0.02 ? '0' : '1';
+      }
     });
     kick.x *= 0.88; kick.y *= 0.88;
     requestAnimationFrame(physics);
