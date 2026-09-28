@@ -119,12 +119,6 @@
   /* ── physique des bulles : ressort + flottement + magnétique + inertie scroll + fluide ── */
   const bubbles = Array.from(navigation.querySelectorAll('.bubble'));
   const blobs = Array.from(navigation.querySelectorAll('.bubble-liquid i'));
-  const particles = Array.from({ length: 34 }, () => {
-    const particle = document.createElement('span');
-    particle.className = 'bubble-particle';
-    navigation.appendChild(particle);
-    return { el: particle, x: 0, y: 0, vx: 0, vy: 0, life: 0 };
-  });
   const ARC = [0, 7, 11, 7, 0];
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const kick = { x: 0, y: 0, last: window.scrollY };
@@ -169,15 +163,8 @@
         tx += Math.cos(t * spd * 0.7 + p.phase) * 1.8;
         if (mouse.active) {
           const dx = p.cx - mouse.x, dy = p.cy - mouse.y;
-          const d = Math.hypot(dx, dy) || 1, R = 170, lock = 34;
-          if (d < R && d > lock) {
-            const k = 1 - d / R;
-            const centerFade = Math.min(1, (d - lock) / 70);
-            const f = k * k * 12 * centerFade;
-            tx += (dx / d) * f; ty += (dy / d) * f;
-          } else if (d <= lock) {
-            tx += (mouse.x - p.cx) * 0.02; ty += (mouse.y - p.cy) * 0.02;
-          }
+          const d = Math.hypot(dx, dy) || 1, R = 190;
+          if (d < R) { const k = 1 - d / R; const f = k * k * 22; tx += (dx / d) * f; ty += (dy / d) * f; }
         }
       }
       if (reduceMotion) {
@@ -191,29 +178,14 @@
         if (L) { p.vx += (L.x - p.x) * 0.018; p.vy += (L.y - p.y) * 0.018; }
         if (Rr) { p.vx += (Rr.x - p.x) * 0.018; p.vy += (Rr.y - p.y) * 0.018; }
         p.x += p.vx; p.y += p.vy;
-        if (open && p.s > 0.75 && Math.abs(p.vx) + Math.abs(p.vy) > 2.4 && Math.random() < 0.11) {
-          const q = particles.find(item => item.life <= 0);
-          if (q) { q.x = p.el.offsetLeft + p.el.offsetWidth / 2 + p.x; q.y = p.el.offsetTop + p.el.offsetHeight / 2 + p.y; q.vx = -p.vx * 0.16 + (Math.random() - .5) * 1.2; q.vy = -p.vy * 0.16 + (Math.random() - .5) * 1.2; q.life = 1; }
-        }
       }
-      const opacity = p.s <= 0.02 ? '0' : Math.min(1, p.s).toFixed(3);
-      const tf = `translate3d(${p.x.toFixed(2)}px, ${p.y.toFixed(2)}px, 0) scale(${Math.max(0, p.s).toFixed(3)})`;
-      p.el.style.setProperty('--bt', tf);
-      p.el.style.setProperty('--bo', opacity);
+      const tf = `translate(${p.x.toFixed(2)}px, ${p.y.toFixed(2)}px) scale(${Math.max(0, p.s).toFixed(3)})`;
+      p.el.style.transform = tf;
+      p.el.style.opacity = p.s <= 0.02 ? '0' : Math.min(1, p.s).toFixed(3);
       if (p.blob) {
-        p.blob.style.setProperty('--bt', tf);
-        p.blob.style.setProperty('--bo', opacity);
+        p.blob.style.transform = tf;
+        p.blob.style.opacity = p.s <= 0.02 ? '0' : '1';
       }
-    });
-    particles.forEach(q => {
-      if (q.life > 0) {
-        q.life *= 0.9; q.x += q.vx; q.y += q.vy; q.vy -= 0.015;
-        q.el.style.setProperty('--px', `${q.x.toFixed(1)}px`);
-        q.el.style.setProperty('--py', `${q.y.toFixed(1)}px`);
-        q.el.style.setProperty('--ps', q.life.toFixed(3));
-        q.el.style.opacity = Math.min(.45, q.life).toFixed(3);
-        if (q.life < .03) q.life = 0;
-      } else q.el.style.opacity = '0';
     });
     kick.x *= 0.88; kick.y *= 0.88;
     requestAnimationFrame(physics);
@@ -339,77 +311,4 @@
       });
     });
   }
-})();
-
-
-/* ── embedded STL viewer ── */
-(() => {
-  const holder = document.getElementById('stl-data');
-  const canvas = document.getElementById('stl-canvas');
-  if (!holder || !canvas) return;
-  const ctx = canvas.getContext('2d');
-  const data = JSON.parse(holder.textContent);
-  const buttons = Array.from(document.querySelectorAll('[data-stl]'));
-  let triangles = [], angle = 0;
-  function decode(name) {
-    const bin = atob(data[name]);
-    const bytes = new Uint8Array(bin.length);
-    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-    const view = new DataView(bytes.buffer);
-    const declared = bytes.length >= 84 ? view.getUint32(80, true) : 0;
-    const binarySize = 84 + declared * 50;
-    const tris = [];
-    if (declared && binarySize <= bytes.length + 84) {
-      const step = Math.max(1, Math.ceil(declared / 9000));
-      for (let i = 0, off = 84; i < declared && off + 50 <= bytes.length; i++, off += 50) {
-        if (i % step) continue;
-        const tri = [];
-        for (let v = 0; v < 3; v++) tri.push([view.getFloat32(off + 12 + v * 12, true), view.getFloat32(off + 16 + v * 12, true), view.getFloat32(off + 20 + v * 12, true)]);
-        tris.push(tri);
-      }
-      return tris;
-    }
-    const text = new TextDecoder().decode(bytes);
-    const nums = [...text.matchAll(/vertex\s+([\-\d.eE]+)\s+([\-\d.eE]+)\s+([\-\d.eE]+)/g)].map(m => [+m[1], +m[2], +m[3]]);
-    for (let i = 0; i + 2 < nums.length; i += 3) tris.push([nums[i], nums[i + 1], nums[i + 2]]);
-    return tris;
-  }
-  function load(name) {
-    triangles = decode(name);
-    buttons.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.stl === name)));
-  }
-  function draw() {
-    if (!triangles.length) return requestAnimationFrame(draw);
-    const w = canvas.width, h = canvas.height;
-    ctx.clearRect(0, 0, w, h);
-    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--soft') || '#f4f4f4';
-    ctx.fillRect(0, 0, w, h);
-    const pts = triangles.flat();
-    let cx = 0, cy = 0, cz = 0;
-    pts.forEach(p => { cx += p[0]; cy += p[1]; cz += p[2]; });
-    cx /= pts.length; cy /= pts.length; cz /= pts.length;
-    let max = 1;
-    pts.forEach(p => { max = Math.max(max, Math.hypot(p[0] - cx, p[1] - cy, p[2] - cz)); });
-    const ca = Math.cos(angle), sa = Math.sin(angle), cb = Math.cos(-0.6), sb = Math.sin(-0.6), scale = Math.min(w, h) * .42 / max;
-    function project(p) {
-      const x = p[0] - cx, y = p[1] - cy, z = p[2] - cz;
-      const x1 = x * ca - z * sa, z1 = x * sa + z * ca;
-      const y1 = y * cb - z1 * sb, z2 = y * sb + z1 * cb;
-      return [w / 2 + x1 * scale, h / 2 - y1 * scale, z2];
-    }
-    const fg = getComputedStyle(document.documentElement).getPropertyValue('--fg') || '#000';
-    const faces = triangles.map(tri => {
-      const a = project(tri[0]), b = project(tri[1]), c = project(tri[2]);
-      const shade = Math.max(.18, Math.min(.62, .38 + ((a[2] + b[2] + c[2]) / (3 * max)) * .22));
-      return { a, b, c, z: (a[2] + b[2] + c[2]) / 3, shade };
-    }).sort((u, v) => u.z - v.z);
-    faces.forEach(f => {
-      ctx.beginPath(); ctx.moveTo(f.a[0], f.a[1]); ctx.lineTo(f.b[0], f.b[1]); ctx.lineTo(f.c[0], f.c[1]); ctx.closePath();
-      ctx.globalAlpha = f.shade; ctx.fillStyle = fg; ctx.fill();
-      ctx.globalAlpha = .18; ctx.strokeStyle = fg; ctx.lineWidth = .7; ctx.stroke();
-    });
-    ctx.globalAlpha = 1; angle += .007; requestAnimationFrame(draw);
-  }
-  buttons.forEach(button => button.addEventListener('click', () => load(button.dataset.stl)));
-  load(buttons[0]?.dataset.stl || Object.keys(data)[0]); draw();
 })();

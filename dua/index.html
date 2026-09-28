@@ -60,7 +60,6 @@ section{padding:88px 0 0}
 padding:24px 26px;margin:18px 0}
 .note{background:var(--accbg);border:1px solid var(--accln);border-radius:var(--r);
 padding:20px 24px;margin:22px 0;font-size:15.5px;line-height:1.62}
-.pill-link{display:inline-flex;align-items:center;gap:12px;padding:10px 16px;border:1px solid var(--ink);border-radius:999px;color:var(--ink);font-size:14px}.pill-link:hover{background:var(--ink);color:var(--sf);text-decoration:none}
 table{width:100%;border-collapse:collapse;font-size:15px}
 th{text-align:left;font-weight:500;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;
 color:var(--ink3);padding:0 12px 9px 0;border-bottom:1px solid var(--hair)}
@@ -112,16 +111,7 @@ color:var(--ink3);font-size:13.5px}
 @media(max-width:820px){.grid2{grid-template-columns:1fr;gap:22px}
  .wrap{padding:0 20px}.navl{display:none}section{padding-top:64px}
  .vstage{height:320px}}
-.cmpwrap{border:1px solid var(--hair);background:var(--sf);border-radius:3px;padding:18px 20px;margin-top:26px}
-.cmpwrap canvas{width:100%;height:300px;display:block}
-@media(max-width:760px){.cmpwrap canvas{height:760px}}
-.cmpctl{display:flex;align-items:center;gap:14px;margin-top:6px}
-.cmpctl input{flex:1;accent-color:var(--acc)}
-.cmpctl label{font-size:12px;color:var(--ink2);white-space:nowrap}
-.cmpctl b{font-variant-numeric:tabular-nums;color:var(--ink);min-width:44px;display:inline-block}
-.dua-sim-frame{width:100%;height:640px;border:1px solid var(--hair);border-radius:var(--r);background:#0a0e14;margin:20px 0}.dua-sim-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-@media(max-width:820px){.dua-sim-frame{height:560px}}
-@media print{nav{display:none}.viewer,.dua-sim-frame,.cmpwrap{display:none}}
+@media print{nav{display:none}.viewer{display:none}}
 </style></head><body>
 
 <nav><div class="wrap">
@@ -221,25 +211,6 @@ color:var(--ink3);font-size:13.5px}
 <span class="vinfo" id="vinfo"></span>
 </div></div>
 <p class="small muted"><span class="l-fr">Ces maillages sont décimés d'environ 90 % pour rester légers : ils servent à comprendre la géométrie, pas à prendre une cote. Les dimensions font foi sur la CAO.</span><span class="l-en">These meshes are decimated by roughly 90% to stay light: they are there to convey geometry, not to take a measurement. Dimensions are authoritative on the CAD only.</span></p>
-</div></section>
-
-
-<section id="simulation"><div class="wrap">
-<div class="sh"><span class="sn">05</span><h2><span class="l-fr">Simulation dynamique 3D</span><span class="l-en">3D dynamic simulation</span></h2></div>
-<p class="sub"><span class="l-fr">Démonstrateur omnidirectionnel à 4 bras avec poussée vectorielle bi-axiale. La simulation complète est intégrée ci-dessous, avec un lien direct si vous voulez l’ouvrir en plein écran.</span><span class="l-en">Four-arm omnidirectional demonstrator with bi-axial thrust vectoring. The full simulation is embedded below, with a direct link if you want to open it full-screen.</span></p>
-<iframe class="dua-sim-frame" src="simulation-3d.html" title="DUA — Simulation dynamique 3D" loading="lazy"></iframe>
-<div class="dua-sim-actions"><a class="pill-link" href="simulation-3d.html" target="_blank" rel="noopener noreferrer"><span class="l-fr">Ouvrir la simulation</span><span class="l-en">Open simulation</span> ↗</a></div>
-<h3 style="margin-top:34px"><span class="l-fr">Pourquoi deux axes plutôt qu'un châssis qui s'incline</span><span class="l-en">Why two axes rather than a tilting airframe</span></h3>
-<p class="sub"><span class="l-fr">Un multirotor classique n'a qu'un seul moyen de produire une force horizontale : incliner tout l'appareil, donc incliner sa poussée. Position et attitude sont le même degré de liberté, et il faut choisir. Rendre les moteurs indépendants du corps sépare les deux, et cela sert dans les deux sens. Déplacer le curseur.</span><span class="l-en">A conventional multirotor has only one way to produce horizontal force: tilt the whole aircraft, and with it its thrust. Position and attitude are the same degree of freedom, and one must be traded for the other. Making the motors independent of the airframe separates them, and that helps both ways. Move the slider.</span></p>
-<div class="cmpwrap">
-  <canvas id="cmpcv"></canvas>
-  <div class="cmpctl">
-    <label><span class="l-fr">Angle de basculement</span><span class="l-en">Tilt angle</span></label>
-    <input type="range" id="cmp-slider" min="0" max="60" value="30">
-    <label><b id="cmp-val">30°</b></label>
-  </div>
-</div>
-<p class="small muted"><span class="l-fr">La poussée propulsive est la même dans les cas 1 et 3 : <i>T</i>·sin θ. Ce n'est donc pas la force qui change, c'est ce qu'elle coûte. Le multirotor classique doit mettre tout son fuselage en incidence pour l'obtenir ; le bras à deux axes l'obtient châssis à plat, donc à traînée minimale, capteurs et charge restés horizontaux.</span><span class="l-en">Propulsive thrust is identical in cases 1 and 3: <i>T</i>·sin θ. What changes is not the force but its cost. The conventional multirotor must put its whole fuselage at incidence to obtain it; the 2-axis arm obtains it with the airframe level, therefore at minimum drag, sensors and payload kept horizontal.</span></p>
 </div></section>
 
 <section id="propulsion"><div class="wrap">
@@ -750,149 +721,4 @@ color:var(--ink3);font-size:13.5px}
          'No embedded model. Drop a binary STL file onto this view.');
   }
 })();
-/* ===================================================================
-   Comparateur : poussee solidaire du chassis contre poussee vectorisee
-   =================================================================== */
-var cc=document.getElementById('cmpcv');
-if(cc){
-  var x2=cc.getContext('2d'), sl=document.getElementById('cmp-slider');
-
-  /* Surface frontale d'une plaque de corde c et d'epaisseur e mise a
-     l'incidence th, rapportee a sa valeur a plat. Modele grossier, assume :
-     il ne sert qu'a donner l'ordre de grandeur du prix aerodynamique. */
-  function frontale(th){
-    var c=0.20, e=0.03;
-    return (c*Math.sin(th)+e*Math.cos(th))/e;
-  }
-  function fleche(c,x,y,dx,dy,col,ep){
-    c.strokeStyle=col;c.fillStyle=col;c.lineWidth=ep||2.4;
-    c.beginPath();c.moveTo(x,y);c.lineTo(x+dx,y+dy);c.stroke();
-    var a=Math.atan2(dy,dx),h=9;
-    c.beginPath();c.moveTo(x+dx,y+dy);
-    c.lineTo(x+dx-h*Math.cos(a-0.42),y+dy-h*Math.sin(a-0.42));
-    c.lineTo(x+dx-h*Math.cos(a+0.42),y+dy-h*Math.sin(a+0.42));
-    c.closePath();c.fill();
-  }
-
-  /* aCorps : inclinaison du chassis. aPouss : direction de la poussee,
-     comptee depuis la verticale. Les trois cas ne different que par ces deux
-     angles ; tout le reste du dessin est commun. */
-  function panneau(ox,oy,w,aCorps,aPouss,n,titre,sous,lignes,couleurN){
-    var c=x2, cx=ox+w/2, cy=oy+126, L=Math.min(62,w*0.27);
-    c.save();
-    /* pastille de numero */
-    c.fillStyle=couleurN; c.beginPath();
-    c.arc(ox+9,oy+14,9,0,6.284); c.fill();
-    c.fillStyle='#fff'; c.font='600 11px ui-sans-serif,system-ui,sans-serif';
-    c.textAlign='center'; c.fillText(n,ox+9,oy+18); c.textAlign='left';
-
-    c.font='600 12.5px ui-sans-serif,system-ui,sans-serif'; c.fillStyle='#1c1b19';
-    c.fillText(titre,ox+25,oy+18);
-    c.font='11.5px ui-sans-serif,system-ui,sans-serif'; c.fillStyle='#6f6d68';
-    c.fillText(sous,ox,oy+40);
-
-    /* horizon */
-    c.strokeStyle='#e7e4e0'; c.lineWidth=1;
-    c.beginPath(); c.moveTo(ox,cy); c.lineTo(ox+w-14,cy); c.stroke();
-
-    /* Convention unique pour tout le dessin, ecran en y vers le bas :
-       un angle positif fait pencher l'appareil vers la DROITE. La poussee
-       part donc en (sin a, -cos a) et le chassis, qui lui est perpendiculaire,
-       en (cos a, +sin a) : cote droit vers le BAS. Les deux signes doivent
-       aller ensemble, sinon le corps et les moteurs tournent en sens inverse
-       et le cas 1 ne ressemble plus a un appareil rigide. */
-    var co=Math.cos(aCorps), si=Math.sin(aCorps);
-    c.strokeStyle='#3a3835'; c.lineWidth=5; c.lineCap='round';
-    c.beginPath(); c.moveTo(cx-L*co,cy-L*si); c.lineTo(cx+L*co,cy+L*si); c.stroke();
-
-    /* mats et disques d'helice, orientes selon aPouss */
-    var ax=-Math.PI/2+aPouss;
-    [-1,1].forEach(function(s){
-      var bx=cx+s*L*co, by=cy+s*L*si;
-      c.strokeStyle='#8d9aa6'; c.lineWidth=3;
-      c.beginPath(); c.moveTo(bx,by);
-      c.lineTo(bx+15*Math.cos(ax),by+15*Math.sin(ax)); c.stroke();
-      var px=bx+15*Math.cos(ax), py=by+15*Math.sin(ax);
-      c.strokeStyle='#c4552a'; c.lineWidth=3.5;
-      c.beginPath();
-      c.moveTo(px-12*Math.cos(ax+Math.PI/2),py-12*Math.sin(ax+Math.PI/2));
-      c.lineTo(px+12*Math.cos(ax+Math.PI/2),py+12*Math.sin(ax+Math.PI/2));
-      c.stroke();
-    });
-
-    /* poussee totale, puis sa composante horizontale */
-    var T=74;
-    fleche(c,cx,cy,T*Math.cos(ax),T*Math.sin(ax),'#c4552a',2.6);
-    var hx=T*Math.sin(aPouss);
-    if(Math.abs(hx)>2){
-      c.setLineDash([4,3]);
-      fleche(c,cx,cy+52,hx,0,'#b03a2e',2);
-      c.setLineDash([]);
-    }
-
-    /* legendes chiffrees */
-    var y=oy+186;
-    lignes.forEach(function(l){
-      c.font=(l[2]?'600 ':'')+'11.5px ui-sans-serif,system-ui,sans-serif';
-      c.fillStyle=l[1]; c.fillText(l[0],ox,y); y+=17;
-    });
-    c.restore();
-  }
-
-  function tracer(){
-    var r=Math.min(window.devicePixelRatio||1,2);
-    var W=cc.clientWidth, empile=W<760;
-    var H=empile?760:300;
-    cc.width=W*r; cc.height=H*r;
-    x2.setTransform(r,0,0,r,0,0);
-    x2.clearRect(0,0,W,H);
-
-    var th=(+sl.value)*Math.PI/180, fr=FR(), d=180/Math.PI;
-    var g=9.81*Math.tan(th), sT=Math.sin(th), cT=Math.cos(th);
-    var f0=frontale(0), fth=frontale(th);
-    function n2(x,k){var s=x.toFixed(k);return fr?s.replace('.',','):s;}
-    document.getElementById('cmp-val').textContent=sl.value+'°';
-
-    var boites = empile
-      ? [[14,0,W-28],[14,250,W-28],[14,500,W-28]]
-      : [[14,0,W/3-14],[W/3+7,0,W/3-14],[2*W/3+7,0,W/3-21]];
-
-    panneau(boites[0][0],boites[0][1],boites[0][2], th, th, '1',
-      fr?'Multirotor classique':'Conventional multirotor',
-      fr?'la poussée est solidaire du corps':'thrust is rigid with the body',
-      [[(fr?'châssis à ':'airframe at ')+sl.value+'°','#1c1b19',1],
-       [(fr?'accélération latérale ':'lateral acceleration ')+n2(g,1)+' m/s²','#b03a2e',1],
-       [(fr?'surface frontale ×':'frontal area ×')+n2(fth/f0,1),'#b03a2e',0],
-       [fr?'capteurs et charge inclinés':'sensors and payload tilted','#6f6d68',0]],
-      '#8d9aa6');
-
-    panneau(boites[1][0],boites[1][1],boites[1][2], th, 0, '2',
-      fr?'Bras à 2 axes — maintien':'2-axis arm — station keeping',
-      fr?'les cardans redressent la poussée':'gimbals keep thrust upright',
-      [[(fr?'châssis à ':'airframe at ')+sl.value+'°','#1c1b19',1],
-       [(fr?'accélération latérale ':'lateral acceleration ')+n2(0,1)+' m/s²','#3f7a52',1],
-       [(fr?'poussée verticale conservée à 100 %':'vertical thrust kept at 100%'),'#3f7a52',0],
-       [fr?'le drone ne bouge pas':'the aircraft does not move','#6f6d68',0]],
-      '#c4552a');
-
-    panneau(boites[2][0],boites[2][1],boites[2][2], 0, th, '3',
-      fr?'Bras à 2 axes — vol rapide':'2-axis arm — fast cruise',
-      fr?'le corps reste à plat, les moteurs pointent devant'
-        :'body stays level, motors point forward',
-      [[(fr?'châssis à 0°':'airframe at 0°'),'#1c1b19',1],
-       [(fr?'poussée propulsive ':'propulsive thrust ')+n2(sT*100,0)+' % '+
-        (fr?'de T, identique au cas 1':'of T, same as case 1'),'#3f7a52',1],
-       [(fr?'surface frontale ×':'frontal area ×')+n2(1,1)+
-        (fr?'  au lieu de ×':'  instead of ×')+n2(fth/f0,1),'#3f7a52',0],
-       [fr?'capteurs, caméra et treuil à plat':'sensors, camera and winch level','#6f6d68',0]],
-      '#3f7a52');
-  }
-  sl.addEventListener('input',tracer);
-  window.addEventListener('resize',tracer);
-  document.addEventListener('click',function(e){
-    if(e.target.closest&&e.target.closest('.lang')) setTimeout(tracer,10);});
-  tracer();
-}
-})();
-
 </script></body></html>
