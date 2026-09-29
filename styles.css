@@ -34,7 +34,7 @@ body{background-image:radial-gradient(var(--dot) 1px,transparent 1.4px);backgrou
 
 /* Menu bulles allégé : pas de physique JS, pas de particules/goo. */
 .bubble-liquid,.bubble-particle{display:none!important}
-.bubble{opacity:0;transform:scale(.92);transition:opacity .18s ease,transform .22s cubic-bezier(.22,1,.36,1);transition-delay:0s;will-change:auto}
+.bubble{background:var(--fg);opacity:0;transform:scale(.92);transition:opacity .18s ease,transform .22s cubic-bezier(.22,1,.36,1);transition-delay:0s;will-change:auto}
 .logo-menu.menu-open .bubble{opacity:1;transform:translateY(calc(var(--i) * 2px)) scale(1);transition-delay:calc(var(--i) * 35ms)}
 .logo-menu:not(.menu-open) .bubble{opacity:0;transform:scale(.92)}
 .dua-gallery{margin-top:34px}
