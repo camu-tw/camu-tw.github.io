@@ -309,3 +309,105 @@
   buttons.forEach(button => button.addEventListener('click', () => load(button.dataset.stl)));
   load(buttons[0]?.dataset.stl || Object.keys(data)[0]); draw();
 })();
+
+
+/* ── DUA two-axis thrust comparison ── */
+(() => {
+  const canvas = document.getElementById('dua-cmpcv');
+  const slider = document.getElementById('dua-cmp-slider');
+  const label = document.getElementById('dua-cmp-val');
+  if (!canvas || !slider || !label) return;
+  const ctx = canvas.getContext('2d');
+  const isFr = () => document.documentElement.dataset.lang !== 'en';
+  const n2 = (x, k) => {
+    const s = x.toFixed(k);
+    return isFr() ? s.replace('.', ',') : s;
+  };
+  function frontal(theta) {
+    const chord = 0.20, thickness = 0.03;
+    return (chord * Math.sin(theta) + thickness * Math.cos(theta)) / thickness;
+  }
+  function arrow(c, x, y, dx, dy, color, width = 2.4) {
+    c.strokeStyle = color; c.fillStyle = color; c.lineWidth = width;
+    c.beginPath(); c.moveTo(x, y); c.lineTo(x + dx, y + dy); c.stroke();
+    const a = Math.atan2(dy, dx), h = 9;
+    c.beginPath(); c.moveTo(x + dx, y + dy);
+    c.lineTo(x + dx - h * Math.cos(a - 0.42), y + dy - h * Math.sin(a - 0.42));
+    c.lineTo(x + dx - h * Math.cos(a + 0.42), y + dy - h * Math.sin(a + 0.42));
+    c.closePath(); c.fill();
+  }
+  function panel(ox, oy, w, bodyAngle, thrustAngle, number, title, subtitle, lines, badge) {
+    const c = ctx, cx = ox + w / 2, cy = oy + 126, L = Math.min(62, w * 0.27);
+    c.save();
+    c.fillStyle = badge; c.beginPath(); c.arc(ox + 9, oy + 14, 9, 0, Math.PI * 2); c.fill();
+    c.fillStyle = '#fff'; c.font = '600 11px ui-sans-serif,system-ui,sans-serif'; c.textAlign = 'center'; c.fillText(number, ox + 9, oy + 18); c.textAlign = 'left';
+    c.font = '600 12.5px ui-sans-serif,system-ui,sans-serif'; c.fillStyle = '#1c1b19'; c.fillText(title, ox + 25, oy + 18);
+    c.font = '11.5px ui-sans-serif,system-ui,sans-serif'; c.fillStyle = '#6f6d68'; c.fillText(subtitle, ox, oy + 40);
+    c.strokeStyle = '#e7e4e0'; c.lineWidth = 1; c.beginPath(); c.moveTo(ox, cy); c.lineTo(ox + w - 14, cy); c.stroke();
+    const co = Math.cos(bodyAngle), si = Math.sin(bodyAngle);
+    c.strokeStyle = '#3a3835'; c.lineWidth = 5; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(cx - L * co, cy - L * si); c.lineTo(cx + L * co, cy + L * si); c.stroke();
+    const axis = -Math.PI / 2 + thrustAngle;
+    [-1, 1].forEach(side => {
+      const bx = cx + side * L * co, by = cy + side * L * si;
+      c.strokeStyle = '#8d9aa6'; c.lineWidth = 3;
+      c.beginPath(); c.moveTo(bx, by); c.lineTo(bx + 15 * Math.cos(axis), by + 15 * Math.sin(axis)); c.stroke();
+      const px = bx + 15 * Math.cos(axis), py = by + 15 * Math.sin(axis);
+      c.strokeStyle = '#c4552a'; c.lineWidth = 3.5; c.beginPath();
+      c.moveTo(px - 12 * Math.cos(axis + Math.PI / 2), py - 12 * Math.sin(axis + Math.PI / 2));
+      c.lineTo(px + 12 * Math.cos(axis + Math.PI / 2), py + 12 * Math.sin(axis + Math.PI / 2)); c.stroke();
+    });
+    const T = 74;
+    arrow(c, cx, cy, T * Math.cos(axis), T * Math.sin(axis), '#c4552a', 2.6);
+    const hx = T * Math.sin(thrustAngle);
+    if (Math.abs(hx) > 2) {
+      c.setLineDash([4, 3]); arrow(c, cx, cy + 52, hx, 0, '#b03a2e', 2); c.setLineDash([]);
+    }
+    let y = oy + 186;
+    lines.forEach(line => {
+      c.font = `${line[2] ? '600 ' : ''}11.5px ui-sans-serif,system-ui,sans-serif`;
+      c.fillStyle = line[1]; c.fillText(line[0], ox, y); y += 17;
+    });
+    c.restore();
+  }
+  function draw() {
+    const rect = canvas.getBoundingClientRect();
+    const W = Math.max(320, Math.round(rect.width || canvas.parentElement.clientWidth || 900));
+    const stacked = W < 760;
+    const H = stacked ? 760 : 300;
+    const ratio = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = W * ratio; canvas.height = H * ratio;
+    canvas.style.height = `${H}px`;
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#fbfaf9'; ctx.fillRect(0, 0, W, H);
+    const degrees = Number(slider.value);
+    const theta = degrees * Math.PI / 180;
+    const fr = isFr(), g = 9.81 * Math.tan(theta), thrust = Math.sin(theta), base = frontal(0), tilted = frontal(theta);
+    label.textContent = `${degrees}°`;
+    const boxes = stacked ? [[14, 0, W - 28], [14, 250, W - 28], [14, 500, W - 28]] : [[14, 0, W / 3 - 14], [W / 3 + 7, 0, W / 3 - 14], [2 * W / 3 + 7, 0, W / 3 - 21]];
+    panel(boxes[0][0], boxes[0][1], boxes[0][2], theta, theta, '1', fr ? 'Multirotor classique' : 'Conventional multirotor', fr ? 'la poussée est solidaire du corps' : 'thrust is rigid with the body', [
+      [`${fr ? 'châssis à ' : 'airframe at '}${degrees}°`, '#1c1b19', true],
+      [`${fr ? 'accélération latérale ' : 'lateral acceleration '}${n2(g, 1)} m/s²`, '#b03a2e', true],
+      [`${fr ? 'surface frontale ×' : 'frontal area ×'}${n2(tilted / base, 1)}`, '#b03a2e', false],
+      [fr ? 'capteurs et charge inclinés' : 'sensors and payload tilted', '#6f6d68', false]
+    ], '#8d9aa6');
+    panel(boxes[1][0], boxes[1][1], boxes[1][2], theta, 0, '2', fr ? 'Bras à 2 axes — maintien' : '2-axis arm — station keeping', fr ? 'les cardans redressent la poussée' : 'gimbals keep thrust upright', [
+      [`${fr ? 'châssis à ' : 'airframe at '}${degrees}°`, '#1c1b19', true],
+      [`${fr ? 'accélération latérale ' : 'lateral acceleration '}0${fr ? ',0' : '.0'} m/s²`, '#3f7a52', true],
+      [fr ? 'poussée verticale conservée à 100 %' : 'vertical thrust kept at 100%', '#3f7a52', false],
+      [fr ? 'le drone ne bouge pas' : 'the aircraft does not move', '#6f6d68', false]
+    ], '#c4552a');
+    panel(boxes[2][0], boxes[2][1], boxes[2][2], 0, theta, '3', fr ? 'Bras à 2 axes — vol rapide' : '2-axis arm — fast cruise', fr ? 'le corps reste à plat, les moteurs pointent devant' : 'body stays level, motors point forward', [
+      [fr ? 'châssis à 0°' : 'airframe at 0°', '#1c1b19', true],
+      [`${fr ? 'poussée propulsive ' : 'propulsive thrust '}${n2(thrust * 100, 0)} % ${fr ? 'de T, identique au cas 1' : 'of T, same as case 1'}`, '#3f7a52', true],
+      [`${fr ? 'surface frontale ×' : 'frontal area ×'}1${fr ? ',0  au lieu de ×' : '.0  instead of ×'}${n2(tilted / base, 1)}`, '#3f7a52', false],
+      [fr ? 'capteurs, caméra et treuil à plat' : 'sensors, camera and winch level', '#6f6d68', false]
+    ], '#3f7a52');
+  }
+  slider.addEventListener('input', draw);
+  window.addEventListener('resize', draw);
+  document.querySelectorAll('[data-language]').forEach(button => button.addEventListener('click', () => setTimeout(draw, 20)));
+  document.querySelector('[data-project="dua"]')?.addEventListener('click', () => setTimeout(draw, 120));
+  setTimeout(draw, 0);
+})();

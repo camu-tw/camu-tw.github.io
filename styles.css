@@ -47,3 +47,15 @@ body{background-image:radial-gradient(var(--dot) 1px,transparent 1.4px);backgrou
 .insight b{font-size:13px;text-transform:uppercase;letter-spacing:.08em}
 .insight span{color:var(--body);font-size:15px;line-height:1.55}
 @media(max-width:700px){.insight-grid{grid-template-columns:1fr}}
+
+
+/* DUA overlay: two-axis thrust comparison. */
+.dua-axes-title{margin-top:38px}
+.cmpwrap{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:18px 20px;margin:22px 0 12px;max-width:980px}
+.cmpwrap canvas{width:100%;height:300px;display:block}
+.cmpctl{display:flex;align-items:center;gap:14px;margin-top:8px}
+.cmpctl input{flex:1;accent-color:var(--fg)}
+.cmpctl label{font-size:12px;color:var(--muted);white-space:nowrap}
+.cmpctl b{font-variant-numeric:tabular-nums;color:var(--fg);min-width:44px;display:inline-block}
+.dua-cmp-caption{max-width:980px;margin-bottom:34px}
+@media(max-width:760px){.cmpwrap canvas{height:760px}.cmpctl{align-items:flex-start;flex-direction:column}.cmpctl input{width:100%}}
